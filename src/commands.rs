@@ -6,7 +6,7 @@ pub(crate) mod commands {
     use crate::components::components::{GameStore, Robot};
     use crate::datatypes::datatypes::{Direction, Position};
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum RobotCommand {
         Turn(Direction),
         DeclareAbsoluteMove(Direction),
@@ -15,7 +15,7 @@ pub(crate) mod commands {
         LeaveSafetyCopy,
     }
 
-    #[derive(Debug)]
+    #[derive(Debug, Clone)]
     pub enum TileCommand {
         ForRobot(Position, RobotCommand),
         Laser(Position, Direction, u32),

@@ -3,8 +3,9 @@
 
 pub(crate) mod components {
     use std::collections::{HashMap, HashSet};
+    use std::hash::Hash;
 
-    use crate::commands::commands::{TileCommand, RobotCommand};
+    use crate::commands::commands::{RobotCommand, TileCommand};
     use crate::datatypes::datatypes::{Direction, Position};
     use crate::game_states::gamestates::GameState;
 
@@ -16,18 +17,20 @@ pub(crate) mod components {
         pub user_name: String,
         pub safety_copy_position: Position,
         pub alive: bool,
+        pub played_cards: Vec<Card>,
     }
 
     #[derive(Debug)]
     pub struct GameStore {
-        robots: Vec<Robot>,
+        pub robots: Vec<Robot>,
         walls: HashSet<Wall>,
         pos_inbounds: HashSet<Position>,
-        tile_eintities: HashMap<GameState, Vec<TileCommand>>,
+        pub tile_eintities: HashMap<GameState, Vec<TileCommand>>,
     }
 
     #[derive(Debug, PartialEq, Eq, Hash)]
-    pub struct Wall(Position, Position);
+    struct Wall(Position, Position);
+
     impl GameStore {
         pub fn direction_blocked(&self, pos: Position, dir: Direction) -> bool {
             self.walls.contains(&Wall(pos, pos + dir.to_position()))
@@ -55,8 +58,8 @@ pub(crate) mod components {
 
         pub fn laser(&mut self, pos: Position, dir: Direction, intensity: u32) {
             let mut laser_positions = self.all_pos_inbounds_in_direction(pos, dir);
-            laser_positions.sort_by_key(|laser_positions| pos.distance(*laser_positions));
-            
+            laser_positions.sort_by_key(|laser_position| pos.distance(*laser_position));
+
             for pos in laser_positions {
                 match self.get_robot(pos) {
                     Some(robot) => {
@@ -78,9 +81,21 @@ pub(crate) mod components {
             todo!()
         }
     }
-
-    pub struct card {
-        id: u32,
-        commands: Vec<RobotCommand>
+    #[derive(Debug)]
+    pub struct Card {
+        pub id: u32,
+        pub commands: Vec<RobotCommand>,
     }
+    impl PartialEq for Card {
+        fn eq(&self, other: &Self) -> bool {
+            self.id == other.id
+        }
+    }
+    impl Hash for Card {
+        fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.id.hash(state);
+    }
+
+    }
+    impl Eq for Card {}
 }
