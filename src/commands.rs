@@ -1,64 +1,67 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-pub(crate) mod commands {
 
-    use crate::components::components::{GameStore, Robot};
-    use crate::datatypes::datatypes::{Direction, Position};
+use crate::components::{Robot};
+use crate::datatypes::{Direction, Position};
 
-    #[derive(Debug, Clone)]
-    pub enum RobotCommand {
-        Turn(Direction),
-        DeclareAbsoluteMove(Direction),
-        DeclareRelativeMove(Direction),
-        Destroy,
-        LeaveSafetyCopy,
-    }
+#[derive(Debug, Clone)]
+pub enum RobotCommand {
+    Absolute(RobotAction),
+    DeclareRelativeMove(Direction),
+}
 
-    #[derive(Debug, Clone)]
-    pub enum TileCommand {
-        ForRobot(Position, RobotCommand),
-        Laser(Position, Direction, u32),
-    }
+#[derive(Debug, Clone)]
+pub enum RobotAction {
+    Turn(Direction),
+    Move(Direction),
+    LockedInPlace,
+    Repair(usize),
+    TakeDamage(usize),
+    Destroy,
+    LeaveSafetyCopy,
+    None
+}
+pub struct ScheduledRobotCommand<'a>(pub &'a mut Robot, pub RobotCommand);
+pub struct ScheduledAction<'a>(pub &'a mut Robot, pub Vec<RobotAction>);
 
-    pub trait RobotCommandAction {
-        fn action(&self, robot: &mut Robot);
-    }
-    
-    pub trait TileCommandAction {
-        fn action(&self, game_store: &mut GameStore);
-    }
-
-    impl RobotCommandAction for RobotCommand {
-        fn action(&self, robot: &mut Robot) {
-            match self {
-                RobotCommand::Turn(direction) => {
-                    robot.facing_direction = robot.facing_direction.turn(*direction)
-                }
-                RobotCommand::DeclareAbsoluteMove(direction) => {
-                    robot.declared_move = *direction
-                }
-                RobotCommand::DeclareRelativeMove(direction) => {
-                    robot.declared_move = robot.facing_direction.turn(*direction)
-                }
-                RobotCommand::Destroy => robot.alive = false,
-                RobotCommand::LeaveSafetyCopy => robot.safety_copy_position = robot.position,
+impl<'a> From<ScheduledRobotCommand<'a>> for ScheduledAction<'a> {
+    fn from(value: ScheduledRobotCommand<'a>) -> Self {
+        let action = match value.1 {
+            RobotCommand::Absolute(robot_action) => robot_action,
+            RobotCommand::DeclareRelativeMove(dir) => {
+                RobotAction::Move(dir * value.0.facing_direction)
             }
+        };
+        ScheduledAction(value.0,vec![action])
+    }
+}
+
+#[derive(Debug, Clone)]
+pub enum TileCommand {
+    ForRobot(Position, RobotCommand),
+    Laser(Position, Direction, usize),
+}
+impl RobotAction {
+    fn action(&self, robot: &mut Robot) {
+        match self {
+            RobotAction::Turn(direction) => {
+                robot.facing_direction = robot.facing_direction.turn(*direction)
+            }
+            RobotAction::Move(dir) => robot.position = robot.position + Position::from(*dir),
+            RobotAction::LockedInPlace => (),
+            RobotAction::TakeDamage(amount) => robot.damage(*amount),
+            RobotAction::Repair(amount) => robot.repair(*amount),
+            RobotAction::Destroy => robot.alive = false,
+            RobotAction::LeaveSafetyCopy => robot.safety_copy_position = robot.position,
+            RobotAction::None => (),
         }
     }
-
-    impl TileCommandAction for TileCommand {
-        fn action(&self, game_store: &mut GameStore) {
-            match self {
-                TileCommand::ForRobot(pos, robot_command_type) => {
-                    if let Some(robot) = game_store.get_robot(*pos) {
-                        robot_command_type.action(robot);
-                    }
-                }
-                TileCommand::Laser(pos, dir, intensity) => {
-                    game_store.laser(*pos, *dir, *intensity);
-                }
-            }
+}
+impl ScheduledAction<'_> {
+    pub fn execute(&mut self) {
+        for action in &self.1 {
+            action.action(self.0)
         }
     }
 }

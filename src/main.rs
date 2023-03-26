@@ -1,4 +1,4 @@
-use crate::datatypes::datatypes::{Direction};
+use crate::datatypes::{Direction, Position};
 
 pub mod commands;
 pub mod datatypes;
@@ -8,6 +8,6 @@ mod automaton;
 
 fn main() {
     let direction = Direction::new(3);
-    println!("{:?}", direction.turn(Direction::new(1)).to_position());
+    println!("{:?}", Position::from(direction.turn(Direction::new(1))));
     println!("{:?}",direction)
 }
