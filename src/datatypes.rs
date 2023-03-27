@@ -47,7 +47,7 @@ pub struct Position {
 
 impl Position {
     pub fn on_axis(&self, dir: Direction, pos: Position) -> bool {
-        let offset: Position = dir.into();
+        let offset = Position::from(dir);
         if offset.x == 0 && pos.x == self.x {
             return 0 <= offset.y * (pos.y - self.y);
         }
