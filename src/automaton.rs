@@ -3,11 +3,13 @@
 use std::collections::HashMap;
 
 use crate::{
-    commands::{RobotAction, RobotCommand, ScheduledAction, ScheduledRobotCommand, TileCommand}, components::{Robot, Player, Card, Board}, game_states::{GameState},
+    commands::{RobotAction, RobotCommand, ScheduledActions, TileCommand},
+    components::{Board, Card, Player, Robot},
+    game_states::GameState,
 };
 
 trait StateAction {
-    fn on_entry(&self, robots:  &mut [Robot], board: &Board, players: &mut [Player]);
+    fn on_entry(&self, robots: &mut [Robot], board: &Board, players: &mut [Player]);
 }
 
 impl StateAction for GameState {
@@ -33,11 +35,11 @@ impl StateAction for GameState {
                             .find(|robot| robot.user_name == player.user_name)
                             .map(|robot| {
                                 if robot.user_name == player.user_name {
-                                    return ScheduledRobotCommand (robot, cmd.clone() );
+                                    let mut actions = ScheduledActions::new(robot);
+                                    actions.push(cmd.clone());
                                 }
-                                ScheduledRobotCommand (robot,RobotCommand::Absolute(RobotAction::None))
+                                ScheduledActions::new(robot)
                             })
-                            .map(ScheduledAction::from)
                             .unwrap()];
                         let robot_actions = resolve_movement(robot_actions, board);
                         for mut robot_action in robot_actions {
@@ -46,8 +48,9 @@ impl StateAction for GameState {
                     }
                 }
             }
-            GameState::FactoryState(_,_) => {
+            GameState::FactoryState(_, _) => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
+                let robot_actions = resolve_movement(robot_actions, board);
                 for mut robot_action in robot_actions {
                     robot_action.execute();
                 }
@@ -57,41 +60,49 @@ impl StateAction for GameState {
     }
 }
 
-fn calculate_actions_from_tile_entities<'a>(game_state: &GameState, robots: &'a mut [Robot], board: &Board)-> Vec<ScheduledAction<'a>>{
-    let active_tile_entities = board.tile_eintities.get(game_state).unwrap_or(&vec![]).clone();
-    let mut robot_map = robots.iter_mut().map(|robot| (robot.position,robot)).collect::<HashMap<_,_>>();
-    let mut scheduled_actions: Vec<ScheduledAction<'a>> = vec![];
-    for tile_command in active_tile_entities {
-        let action = match tile_command {
+fn calculate_actions_from_tile_entities<'a>(
+    game_state: &GameState,
+    robots: &'a mut [Robot],
+    board: &Board,
+) -> Vec<ScheduledActions<'a>> {
+    let active_tile_commands = board
+        .tile_eintities
+        .get(game_state)
+        .unwrap_or(&vec![])
+        .clone();
+    let mut action_map = robots
+        .iter_mut()
+        .map(|robot| (robot.position, ScheduledActions::new(robot)))
+        .collect::<HashMap<_, _>>();
+
+    for tile_command in active_tile_commands {
+        match tile_command {
             TileCommand::ForRobot(pos, cmd) => {
-                let robot = robot_map.remove(&pos);
-                robot.map(|robot| ScheduledAction::from(ScheduledRobotCommand(robot,cmd)))
-            },
+                if let Some(actions) = action_map.get_mut(&pos) {
+                    actions.push(cmd);
+                }
+            }
             TileCommand::Laser(pos, dir, intensity) => {
-                let laser_positions = board.all_pos_inbounds_in_direction(pos, dir);
-                let mut laser_action = None;
+                let laser_positions = board.all_pos_inbounds_in_direction_until_blocked(pos, dir);
                 for pos in laser_positions {
-                    match robot_map.remove(&pos) {
-                        Some(robot) => {
-                            laser_action = Some(ScheduledAction(robot,vec![RobotAction::TakeDamage(intensity)]));
-                            break;
+                    match action_map.get_mut(&pos) {
+                        Some(actions) => {
+                            actions.push(RobotCommand::Absolute(RobotAction::TakeDamage(intensity)));
+                            break
                         }
-                        None if board.direction_blocked(pos, dir) => break,
-                        None => continue
+                        None => continue,
                     }
                 }
-                laser_action
-            },
+            }
         };
-        if let Some(a) = action { scheduled_actions.push(a) }
     }
-    todo!()
+    action_map.into_iter().map(|entry| entry.1).collect()
+
 }
 
-
 fn resolve_movement<'a>(
-    robot_actions: Vec<ScheduledAction<'a>>,
+    robot_actions: Vec<ScheduledActions<'a>>,
     board: &Board,
-) -> Vec<ScheduledAction<'a>> {
+) -> Vec<ScheduledActions<'a>> {
     todo!()
 }

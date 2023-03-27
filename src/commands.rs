@@ -22,18 +22,20 @@ pub enum RobotAction {
     LeaveSafetyCopy,
     None
 }
-pub struct ScheduledRobotCommand<'a>(pub &'a mut Robot, pub RobotCommand);
-pub struct ScheduledAction<'a>(pub &'a mut Robot, pub Vec<RobotAction>);
+pub struct ScheduledActions<'a>(pub &'a mut Robot, pub Vec<RobotAction>);
 
-impl<'a> From<ScheduledRobotCommand<'a>> for ScheduledAction<'a> {
-    fn from(value: ScheduledRobotCommand<'a>) -> Self {
-        let action = match value.1 {
+impl<'a> ScheduledActions<'a> {
+    pub fn push(&mut self, cmd: RobotCommand) {
+        let action = match cmd {
             RobotCommand::Absolute(robot_action) => robot_action,
             RobotCommand::DeclareRelativeMove(dir) => {
-                RobotAction::Move(dir * value.0.facing_direction)
+                RobotAction::Move(dir * self.0.facing_direction)
             }
         };
-        ScheduledAction(value.0,vec![action])
+        self.1.push(action);
+    }
+    pub fn new(robot: &'a mut Robot) -> Self{
+        ScheduledActions(robot, vec![])
     }
 }
 
@@ -58,7 +60,7 @@ impl RobotAction {
         }
     }
 }
-impl ScheduledAction<'_> {
+impl ScheduledActions<'_> {
     pub fn execute(&mut self) {
         for action in &self.1 {
             action.action(self.0)

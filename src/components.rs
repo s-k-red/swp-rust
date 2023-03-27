@@ -4,6 +4,8 @@
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
+use itertools::Itertools;
+
 use crate::commands::{RobotCommand, TileCommand};
 use crate::datatypes::{Direction, Position};
 use crate::game_states::GameState;
@@ -49,23 +51,31 @@ struct Wall(Position, Position);
 
 impl Board {
     pub fn direction_blocked(&self, pos: Position, dir: Direction) -> bool {
-        self.walls.contains(&Wall(pos, pos + dir.into()))
-            || self.walls.contains(&Wall(pos + dir.into(), pos))
+        self.direct_way_blocked(pos, pos + Position::from(dir))
     }
-    pub fn all_pos_inbounds_in_direction(&self, pos: Position, dir: Direction) -> Vec<Position> {
-        let mut res = self.pos_inbounds
+    pub fn direct_way_blocked(&self, pos1: Position, pos2: Position) -> bool {
+        self.walls.contains(&Wall(pos1, pos2)) || self.walls.contains(&Wall(pos2, pos1))
+    }
+
+    pub fn all_pos_inbounds_in_direction_until_blocked(&self, pos: Position, dir: Direction) -> Vec<Position> {
+        let mut res = self
+            .pos_inbounds
             .iter()
             .filter(|filter_pos| pos.on_axis(dir, **filter_pos))
             .copied::<Position>()
             .collect::<Vec<Position>>();
         res.sort_by_key(|res_position| pos.distance(*res_position));
-        res
+        res.insert(0, pos);
+        res.iter()
+            .tuple_windows()
+            .take_while(|(&pos1, &pos2)| !self.direct_way_blocked(pos1, pos2))
+            .map(|(_, pos)| *pos)
+            .collect::<Vec<_>>()
     }
     pub fn is_inbounds(&self, pos: Position) -> bool {
         self.pos_inbounds.contains(&pos)
     }
 }
-
 
 impl Robot {
     pub fn damage(&mut self, amount: usize) {
