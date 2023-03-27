@@ -41,23 +41,34 @@ pub struct RobotSettings {
 
 #[derive(Debug)]
 pub struct Board {
-    walls: HashSet<Wall>,
+    pub walls: HashSet<Wall>,
     pos_inbounds: HashSet<Position>,
     pub tile_eintities: HashMap<GameState, Vec<TileCommand>>,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
-struct Wall(Position, Position);
-
+#[derive(Debug,Clone)]
+pub struct Wall(pub Position,pub Position);
+impl PartialEq for Wall {
+    fn eq(&self, other: &Self) -> bool {
+        (self.0 == other.0 && self.1 == other.1) || (self.0 == other.1 && self.1 == other.0)
+    }
+}
+impl Eq for Wall {}
+impl Hash for Wall {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        (self.0 + self.1).hash(state)
+    }
+}
 impl Board {
-    pub fn direction_blocked(&self, pos: Position, dir: Direction) -> bool {
-        self.direct_way_blocked(pos, pos + Position::from(dir))
-    }
     pub fn direct_way_blocked(&self, pos1: Position, pos2: Position) -> bool {
-        self.walls.contains(&Wall(pos1, pos2)) || self.walls.contains(&Wall(pos2, pos1))
+        self.walls.contains(&Wall(pos1, pos2))
     }
 
-    pub fn all_pos_inbounds_in_direction_until_blocked(&self, pos: Position, dir: Direction) -> Vec<Position> {
+    pub fn all_pos_inbounds_in_direction_until_blocked(
+        &self,
+        pos: Position,
+        dir: Direction,
+    ) -> Vec<Position> {
         let mut res = self
             .pos_inbounds
             .iter()

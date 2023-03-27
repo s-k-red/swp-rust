@@ -3,10 +3,11 @@
 use std::collections::HashMap;
 
 use crate::{
-    commands::{RobotAction, RobotCommand, ScheduledActions, TileCommand},
+    commands::{execute, RobotActionInPlace, ScheduledActions, TileCommand, TransitionLocks},
     components::{Board, Card, Player, Robot},
-    game_states::GameState,
+    game_states::GameState, resolve_movement::resolve_movement,
 };
+
 
 trait StateAction {
     fn on_entry(&self, robots: &mut [Robot], board: &Board, players: &mut [Player]);
@@ -36,23 +37,28 @@ impl StateAction for GameState {
                             .map(|robot| {
                                 if robot.user_name == player.user_name {
                                     let mut actions = ScheduledActions::new(robot);
-                                    actions.push(cmd.clone());
+                                    actions.insert_and_convert(cmd.clone());
                                 }
                                 ScheduledActions::new(robot)
                             })
                             .unwrap()];
-                        let robot_actions = resolve_movement(robot_actions, board);
-                        for mut robot_action in robot_actions {
-                            robot_action.execute();
+                        let robot_actions = resolve_movement(
+                            robot_actions,
+                            board,
+                            TransitionLocks::new(&board.walls),
+                        );
+                        for robot_action in robot_actions {
+                            execute(robot_action);
                         }
                     }
                 }
             }
             GameState::FactoryState(_, _) => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
-                let robot_actions = resolve_movement(robot_actions, board);
-                for mut robot_action in robot_actions {
-                    robot_action.execute();
+                let robot_actions =
+                    resolve_movement(robot_actions, board, TransitionLocks::new(&board.walls));
+                for robot_action in robot_actions {
+                    execute(robot_action);
                 }
             }
             GameState::RoundEnd => todo!(),
@@ -77,9 +83,9 @@ fn calculate_actions_from_tile_entities<'a>(
 
     for tile_command in active_tile_commands {
         match tile_command {
-            TileCommand::ForRobot(pos, cmd) => {
+            TileCommand::FromRobotCommand(pos, cmd) => {
                 if let Some(actions) = action_map.get_mut(&pos) {
-                    actions.push(cmd);
+                    actions.insert_and_convert(cmd);
                 }
             }
             TileCommand::Laser(pos, dir, intensity) => {
@@ -87,8 +93,8 @@ fn calculate_actions_from_tile_entities<'a>(
                 for pos in laser_positions {
                     match action_map.get_mut(&pos) {
                         Some(actions) => {
-                            actions.push(RobotCommand::Absolute(RobotAction::TakeDamage(intensity)));
-                            break
+                            actions.insert(RobotActionInPlace::TakeDamage(intensity));
+                            break;
                         }
                         None => continue,
                     }
@@ -97,12 +103,4 @@ fn calculate_actions_from_tile_entities<'a>(
         };
     }
     action_map.into_iter().map(|entry| entry.1).collect()
-
-}
-
-fn resolve_movement<'a>(
-    robot_actions: Vec<ScheduledActions<'a>>,
-    board: &Board,
-) -> Vec<ScheduledActions<'a>> {
-    todo!()
 }

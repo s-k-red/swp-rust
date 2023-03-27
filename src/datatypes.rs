@@ -3,10 +3,10 @@
 
 use std::{
     fmt::Display,
-    ops::{Add, Mul},
+    ops::{Add, Mul, Sub},
 };
 
-#[derive(Clone, Copy, Debug)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Direction {
     ordinal: i8,
 }
@@ -68,6 +68,16 @@ impl Add for Position {
         Self {
             x: self.x + rhs.x,
             y: self.y + rhs.y,
+        }
+    }
+}
+impl Sub for Position {
+    type Output = Self;
+    
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
         }
     }
 }
