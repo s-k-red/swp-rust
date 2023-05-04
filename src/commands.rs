@@ -1,11 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::collections::HashSet;
+use std::collections::HashMap;
 
-use hashbag::HashBag;
-
-use crate::components::{Robot, Wall};
+use crate::components::Robot;
 use crate::datatypes::{Direction, Position};
 
 #[derive(Debug, Clone)]
@@ -35,73 +33,43 @@ pub enum RobotActionInPlace {
 }
 pub struct ScheduledActions<'a> {
     pub robot: &'a mut Robot,
-    pub mov: Option<(RobotActionMove, bool)>,
-    actions: HashBag<RobotActionInPlace>,
+    pub mov: Option<RobotActionMove>,
+    actions: Vec<RobotActionInPlace>,
 }
+pub struct ScheduledMoves<'a> {
+    pub robot: &'a mut Robot,
+    pub own_move: Option<RobotActionMove>,
+}
+pub struct ChainedMove {
+    pub dependent_on: Vec<String>,
+    pub mov: RobotActionMove,
+}
+
 impl<'a> ScheduledActions<'a> {
-    pub fn insert<T: Into<RobotAction>>(&mut self, action: T) {
+    pub fn push<T: Into<RobotAction>>(&mut self, action: T) {
         match action.into() {
             RobotAction::Move(m) => {
-                self.mov = Some((m, true));
+                self.mov = Some(m);
             }
             RobotAction::InPlace(in_place) => {
-                self.actions.insert(in_place);
+                self.actions.push(in_place);
             }
         }
     }
-    pub fn insert_and_convert(&mut self, cmd: RobotCommand) {
+    pub fn push_and_convert(&mut self, cmd: RobotCommand) {
         let action = match cmd {
             RobotCommand::Absolute(robot_action) => robot_action,
             RobotCommand::DeclareRelativeMove(dir) => {
                 RobotAction::from(RobotActionMove::Move(dir * self.robot.facing_direction))
             }
         };
-        self.insert(action)
+        self.push(action)
     }
     pub fn new(robot: &'a mut Robot) -> Self {
         ScheduledActions {
             robot,
-            actions: HashBag::new(),
+            actions: vec![],
             mov: None,
-        }
-    }
-    pub fn scheduled_dead_or_dead(&self) -> bool {
-        0 < self.actions.contains(&RobotActionInPlace::Destroy) || !self.robot.alive
-    }
-    pub fn simulate_movement(&self) -> Option<Position> {
-        self.mov.as_ref().map(|(m, _)| match m {
-            RobotActionMove::Move(dir) => self.robot.position + Position::from(*dir),
-        })
-    }
-}
-
-pub struct TransitionLocks {
-    strong: HashSet<Wall>,
-    weak: HashSet<Wall>,
-}
-
-impl TransitionLocks {
-    pub fn propagate_block(&mut self, from: Position, to: Position) {
-        self.strong.insert(Wall(from, to));
-        self.strong.insert(Wall(from, from - (from - to)));
-        self.weak.insert(Wall(to, to + (from - to)));
-    }
-    pub fn check_and_reset(&self, actions: &mut ScheduledActions) -> bool {
-        if let Some(pos) = actions.simulate_movement() {
-            if self.strong.contains(&Wall(actions.robot.position, pos))
-                || (actions.mov.as_ref().unwrap().1
-                    && self.weak.contains(&Wall(actions.robot.position, pos)))
-            {
-                actions.mov = None;
-                return true;
-            }
-        }
-        false
-    }
-    pub fn new(walls: &HashSet<Wall>) -> Self {
-        Self {
-            strong: HashSet::clone(walls),
-            weak: HashSet::new(),
         }
     }
 }
@@ -111,6 +79,7 @@ pub enum TileCommand {
     FromRobotCommand(Position, RobotCommand),
     Laser(Position, Direction, usize),
 }
+
 impl RobotActionInPlace {
     fn action(&self, robot: &mut Robot) {
         match self {
@@ -127,9 +96,12 @@ impl RobotActionInPlace {
 
 impl RobotActionMove {
     fn action(&self, robot: &mut Robot) {
-        robot.position = match self {
+        robot.position = self.simulate(robot);
+    }
+    fn simulate(&self, robot: &Robot) -> Position {
+        match self {
             RobotActionMove::Move(dir) => robot.position + Position::from(*dir),
-        };
+        }
     }
 }
 impl From<RobotActionMove> for RobotAction {
@@ -143,8 +115,21 @@ impl From<RobotActionInPlace> for RobotAction {
     }
 }
 
+pub fn execute_non_moves(actions: ScheduledActions) -> ScheduledMoves {
+    for action in &actions.actions {
+        action.action(actions.robot)
+    }
+    ScheduledMoves {
+        robot: actions.robot,
+        own_move: actions.mov,
+    }
+}
+
 pub fn execute(actions: ScheduledActions) {
     for action in &actions.actions {
         action.action(actions.robot)
+    }
+    if let Some(unwrap_mov) = actions.mov {
+        unwrap_mov.action(actions.robot)
     }
 }
