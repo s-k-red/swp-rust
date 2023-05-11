@@ -3,11 +3,15 @@
 use std::collections::HashMap;
 
 use crate::{
-    commands::{execute, RobotActionInPlace, ScheduledActions, TileCommand, execute_non_moves},
+    commands::{
+        execute, execute_non_moves, RobotActionInPlace, ScheduledActions,
+        TileEntity,
+    },
     components::{Board, Card, Player, Robot},
-    game_states::GameState, resolve_movement::resolve_movement,
+    datatypes::Position,
+    game_states::GameState,
+    resolve_movement::{resolve_card_movement, resolve_factory_movement},
 };
-
 
 trait StateAction {
     fn on_entry(&self, robots: &mut [Robot], board: &Board, players: &mut [Player]);
@@ -29,6 +33,7 @@ impl StateAction for GameState {
                     })
                     .collect::<Vec<(&Player, &Card)>>();
                 cards.sort_by_key(|(_, card)| card.id);
+
                 for (player, card) in cards {
                     for cmd in &card.commands {
                         let robot_actions = vec![robots
@@ -42,11 +47,9 @@ impl StateAction for GameState {
                                 ScheduledActions::new(robot)
                             })
                             .unwrap()];
-                        let robot_moves = robot_actions.into_iter().map(|actions| execute_non_moves(actions)).collect();
-                        let robot_actions = resolve_movement(
-                            robot_moves,
-                            board,
-                        );
+                        let robot_moves =
+                            robot_actions.into_iter().map(execute_non_moves).collect();
+                        let robot_actions = resolve_card_movement(robot_moves, board, self);
                         for robot_action in robot_actions {
                             execute(robot_action);
                         }
@@ -55,14 +58,25 @@ impl StateAction for GameState {
             }
             GameState::FactoryState(_, _) => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
-                let robot_moves = robot_actions.into_iter().map(|actions| execute_non_moves(actions)).collect();
-                let robot_actions =
-                    resolve_movement(robot_moves, board);
+                let robot_moves = robot_actions.into_iter().map(execute_non_moves).collect();
+                let robot_actions = resolve_factory_movement(robot_moves, board, self);
                 for robot_action in robot_actions {
                     execute(robot_action);
                 }
             }
-            GameState::RoundEnd => todo!(),
+            GameState::RoundEnd => {
+                let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
+                let robot_moves = robot_actions.into_iter().map(execute_non_moves).collect();
+                let robot_actions = resolve_factory_movement(robot_moves, board, self);
+                for robot_action in robot_actions {
+                    execute(robot_action);
+                }
+                let mut occupied = robots.iter().filter(|robot| robot.alive).map(|robot| robot.position).collect::<Vec<_>>();
+                    robots
+                        .iter_mut()
+                        .filter(|robot| !robot.alive && robot.safety_copy_amount > 0)
+                        .for_each(|robot| {robot.respawn(board,&mut occupied)});
+            }
         }
     }
 }
@@ -79,17 +93,18 @@ fn calculate_actions_from_tile_entities<'a>(
         .clone();
     let mut action_map = robots
         .iter_mut()
+        .filter(|robot| robot.alive)
         .map(|robot| (robot.position, ScheduledActions::new(robot)))
         .collect::<HashMap<_, _>>();
 
     for tile_command in active_tile_commands {
         match tile_command {
-            TileCommand::FromRobotCommand(pos, cmd) => {
+            TileEntity::FromRobotCommand(pos, cmd) => {
                 if let Some(actions) = action_map.get_mut(&pos) {
-                    actions.push_and_convert(cmd);
+                    actions.push(cmd);
                 }
             }
-            TileCommand::Laser(pos, dir, intensity) => {
+            TileEntity::Laser(pos, dir, intensity) => {
                 let laser_positions = board.all_pos_inbounds_in_direction_until_blocked(pos, dir);
                 for pos in laser_positions {
                     match action_map.get_mut(&pos) {

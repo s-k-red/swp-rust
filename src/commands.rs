@@ -1,8 +1,6 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::collections::HashMap;
-
 use crate::components::Robot;
 use crate::datatypes::{Direction, Position};
 
@@ -14,35 +12,40 @@ pub enum RobotCommand {
 
 #[derive(Debug, Clone)]
 pub enum RobotAction {
-    Move(RobotActionMove),
+    Move(Direction),
     InPlace(RobotActionInPlace),
 }
-
-#[derive(Debug, Clone)]
-pub enum RobotActionMove {
-    Move(Direction),
-}
-
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub enum RobotActionInPlace {
     Turn(Direction),
-    Repair(usize),
-    TakeDamage(usize),
+    Repair(i8),
+    TakeDamage(i8),
     Destroy,
     LeaveSafetyCopy,
+    ReachCheckpointAndLeaveSafetyCopy(usize),
 }
+
+#[derive(Debug, Clone)]
+pub enum TileEntity {
+    FromRobotCommand(Position, RobotAction),
+    Laser(Position, Direction, i8),
+}
+
+#[derive(Debug, Clone)]
+pub struct OnEntryTileEntity {
+    pub position: Position,
+    pub action: RobotActionInPlace,
+    pub direction: Option<Direction>,
+}
+
 pub struct ScheduledActions<'a> {
     pub robot: &'a mut Robot,
-    pub mov: Option<RobotActionMove>,
-    actions: Vec<RobotActionInPlace>,
+    pub mov: Option<Direction>,
+    pub actions: Vec<RobotActionInPlace>,
 }
-pub struct ScheduledMoves<'a> {
+pub struct ScheduledMove<'a> {
     pub robot: &'a mut Robot,
-    pub own_move: Option<RobotActionMove>,
-}
-pub struct ChainedMove {
-    pub dependent_on: Vec<String>,
-    pub mov: RobotActionMove,
+    pub mov: Option<Direction>,
 }
 
 impl<'a> ScheduledActions<'a> {
@@ -56,11 +59,12 @@ impl<'a> ScheduledActions<'a> {
             }
         }
     }
+
     pub fn push_and_convert(&mut self, cmd: RobotCommand) {
         let action = match cmd {
             RobotCommand::Absolute(robot_action) => robot_action,
             RobotCommand::DeclareRelativeMove(dir) => {
-                RobotAction::from(RobotActionMove::Move(dir * self.robot.facing_direction))
+                RobotAction::Move(dir * self.robot.facing_direction)
             }
         };
         self.push(action)
@@ -74,39 +78,28 @@ impl<'a> ScheduledActions<'a> {
     }
 }
 
-#[derive(Debug, Clone)]
-pub enum TileCommand {
-    FromRobotCommand(Position, RobotCommand),
-    Laser(Position, Direction, usize),
-}
-
 impl RobotActionInPlace {
     fn action(&self, robot: &mut Robot) {
         match self {
             RobotActionInPlace::Turn(direction) => {
                 robot.facing_direction = robot.facing_direction.turn(*direction)
             }
-            RobotActionInPlace::TakeDamage(amount) => robot.damage(*amount),
-            RobotActionInPlace::Repair(amount) => robot.repair(*amount),
+            RobotActionInPlace::TakeDamage(amount) => {
+                robot.hp -= amount;
+                if robot.hp == 0 {
+                    robot.alive = false;
+                }
+            }
+            RobotActionInPlace::Repair(amount) => robot.hp += amount,
             RobotActionInPlace::Destroy => robot.alive = false,
             RobotActionInPlace::LeaveSafetyCopy => robot.safety_copy_position = robot.position,
+            RobotActionInPlace::ReachCheckpointAndLeaveSafetyCopy(checkpoint_number) => {
+                if *checkpoint_number == robot.greatest_checkpoint_reached + 1 {
+                    robot.greatest_checkpoint_reached = *checkpoint_number;
+                    robot.safety_copy_position = robot.position;
+                }
+            }
         }
-    }
-}
-
-impl RobotActionMove {
-    fn action(&self, robot: &mut Robot) {
-        robot.position = self.simulate(robot);
-    }
-    fn simulate(&self, robot: &Robot) -> Position {
-        match self {
-            RobotActionMove::Move(dir) => robot.position + Position::from(*dir),
-        }
-    }
-}
-impl From<RobotActionMove> for RobotAction {
-    fn from(value: RobotActionMove) -> Self {
-        RobotAction::Move(value)
     }
 }
 impl From<RobotActionInPlace> for RobotAction {
@@ -115,21 +108,32 @@ impl From<RobotActionInPlace> for RobotAction {
     }
 }
 
-pub fn execute_non_moves(actions: ScheduledActions) -> ScheduledMoves {
+impl ScheduledMove<'_> {
+    pub fn simulate(&self) -> Position {
+        match self.mov {
+            Some(unwrap) => self.robot.position + unwrap.into(),
+            None => self.robot.position,
+        }
+    }
+}
+
+pub fn execute_non_moves(actions: ScheduledActions) -> ScheduledMove {
     for action in &actions.actions {
         action.action(actions.robot)
     }
-    ScheduledMoves {
+    ScheduledMove {
         robot: actions.robot,
-        own_move: actions.mov,
+        mov: actions.mov,
     }
 }
 
 pub fn execute(actions: ScheduledActions) {
+    if let Some(unwrap_mov) = actions.mov {
+        {
+            actions.robot.position = actions.robot.position + unwrap_mov.into();
+        }
+    }
     for action in &actions.actions {
         action.action(actions.robot)
-    }
-    if let Some(unwrap_mov) = actions.mov {
-        unwrap_mov.action(actions.robot)
     }
 }

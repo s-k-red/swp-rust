@@ -5,6 +5,12 @@ use std::{
     fmt::Display,
     ops::{Add, Mul, Sub},
 };
+pub const ALL_DIRECTIONS: [Direction; 4] = [
+    Direction { ordinal: 0 },
+    Direction { ordinal: 1 },
+    Direction { ordinal: 2 },
+    Direction { ordinal: 3 },
+];
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
 pub struct Direction {
@@ -73,7 +79,7 @@ impl Add for Position {
 }
 impl Sub for Position {
     type Output = Self;
-    
+
     fn sub(self, rhs: Self) -> Self::Output {
         Self {
             x: self.x - rhs.x,
