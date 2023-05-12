@@ -27,6 +27,7 @@ pub fn start_game(mut game_store: GameStore) -> GameStore {
     GameAutomaton::hand_out_cards(&mut game_store);
     game_store
 }
+
 pub fn run_game(
     cards_played: HashMap<String, Vec<Card>>,
     mut game_store: GameStore,
@@ -41,12 +42,18 @@ pub fn run_game(
                     player.cards_in_hand = cards.clone();
                     player
                 } else {
-                    for card in cards {}
+                    for (index, card) in cards.clone().iter_mut().enumerate() {
+                        let _discard = std::mem::replace(
+                            player.cards_in_hand.get_mut(index).unwrap(),
+                            card.clone(),
+                        );
+                    }
                     player
                 }
             }
             None => player,
         })
         .collect::<Vec<_>>();
+    game_automaton.round_trip(&mut game_store);
     game_store
 }
