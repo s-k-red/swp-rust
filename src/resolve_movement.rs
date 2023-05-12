@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use itertools::Itertools;
 
 use crate::{
@@ -50,8 +47,6 @@ fn cancel_with_check<'a>(
         };
         if tuple_represents_collision {
             any_cancelled = true;
-            let action_pos_tuple_a = robot_moves.get(a).unwrap();
-            let action_pos_tuple_b = robot_moves.get(b).unwrap();
 
             robot_moves.get_mut(a).unwrap().mov = None;
             robot_moves.get_mut(b).unwrap().mov = None;
@@ -60,7 +55,11 @@ fn cancel_with_check<'a>(
     (robot_moves, any_cancelled)
 }
 
-fn test_oppoosing(pair1: (Position, Position), pair2: (Position, Position), board: &Board) -> bool {
+fn test_oppoosing(
+    pair1: (Position, Position),
+    pair2: (Position, Position),
+    _board: &Board,
+) -> bool {
     pair1.0 == pair2.1 && pair1.1 == pair2.0
 }
 fn test_moving_to_same(

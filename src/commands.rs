@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use crate::components::{Board, Robot};
 use crate::datatypes::{Direction, Position};
 use crate::game_states::GameState;
@@ -28,9 +25,11 @@ pub enum RobotActionInPlace {
 
 #[derive(Debug, Clone)]
 pub enum TileEntity {
-    Direct(GameState, Position, RobotAction),
-    Indirect(GameState, IndirectTileEntity),
-    OnEntry(GameState, Position, OnEntryTileEntity),
+    Direct(Vec<GameState>, Position, RobotAction),
+    Indirect(Vec<GameState>, IndirectTileEntity),
+    OnEntry(Vec<GameState>, Position, OnEntryTileEntity),
+    Empty(Position),
+    Wall(Position, Direction),
 }
 
 #[derive(Debug, Clone)]

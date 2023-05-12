@@ -1,20 +1,19 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
 use itertools::Itertools;
 
-use crate::commands::{IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotCommand};
+use crate::commands::{
+    IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotCommand, TileEntity,
+};
 use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
-use crate::game_states::GameState;
+use crate::game_states::{self, GameState};
 
 const STARTING_LIVES: usize = 3;
 const MAX_HP: i8 = 10;
 const HAND_SIZE: i8 = 5;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Robot {
     pub user_name: String,
     pub position: Position,
@@ -28,14 +27,14 @@ pub struct Robot {
     //pub locked_card_slots: Vec<bool>, not needed in this abstraction
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Player {
     pub user_name: String,
     pub cards_in_hand: Vec<Card>,
     pub cards_played: Vec<Card>,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone, Builder)]
 pub struct GameStore {
     pub robots: Vec<Robot>,
     pub player: Vec<Player>,
@@ -50,7 +49,7 @@ pub struct GameStore {
 //    pub card_slots: usize,
 //}
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Board {
     pub walls: HashSet<Wall>,
     pos_inbounds: HashSet<Position>,
@@ -101,6 +100,91 @@ impl Board {
     pub fn is_inbounds(&self, pos: Position) -> bool {
         self.pos_inbounds.contains(&pos)
     }
+
+    pub fn new(board: Vec<TileEntity>) -> Self {
+        let mut walls: HashSet<Wall> = HashSet::default();
+        let mut pos_inbounds: HashSet<Position> = HashSet::default();
+        let mut direct_tile_eintities: HashMap<GameState, HashMap<Position, Vec<RobotAction>>> =
+            HashMap::default();
+        let mut indirect_tile_eintities: HashMap<GameState, Vec<IndirectTileEntity>> =
+            HashMap::default();
+        let mut on_entry_tile_eintities: HashMap<
+            GameState,
+            HashMap<Position, Vec<OnEntryTileEntity>>,
+        > = HashMap::default();
+
+        for tile_entity in board {
+            match tile_entity {
+                TileEntity::Direct(game_states, pos, action) => {
+                    direct_tile_eintities =
+                        insert_help(game_states, pos, action, direct_tile_eintities);
+                    pos_inbounds.insert(pos);
+                }
+                TileEntity::Indirect(game_states, entity) => {
+                    for game_state in game_states {
+                        match indirect_tile_eintities.get_mut(&game_state) {
+                            Some(vec) => {
+                                vec.push(entity.clone());
+                            }
+                            None => {
+                                indirect_tile_eintities.insert(game_state, vec![entity.clone()]);
+                            }
+                        }
+                    }
+
+                    pos_inbounds.insert(match entity {
+                        IndirectTileEntity::Laser(pos, _, _) => pos,
+                    });
+                }
+                TileEntity::OnEntry(game_states, pos, entity) => {
+                    on_entry_tile_eintities =
+                        insert_help(game_states, pos, entity, on_entry_tile_eintities);
+                    pos_inbounds.insert(pos);
+                }
+                TileEntity::Empty(pos) => {
+                    pos_inbounds.insert(pos);
+                }
+                TileEntity::Wall(pos, dir) => {
+                    walls.insert(Wall(pos, pos + dir.into()));
+                    pos_inbounds.insert(pos);
+                }
+            }
+        }
+
+        Board {
+            walls,
+            pos_inbounds,
+            direct_tile_eintities,
+            indirect_tile_eintities,
+            on_entry_tile_eintities,
+        }
+    }
+}
+
+fn insert_help<T: Clone>(
+    game_states: Vec<GameState>,
+    pos: Position,
+    entity: T,
+    mut big_map: HashMap<GameState, HashMap<Position, Vec<T>>>,
+) -> HashMap<GameState, HashMap<Position, Vec<T>>> {
+    for game_state in game_states {
+        match big_map.get_mut(&game_state) {
+            Some(map) => match map.get_mut(&pos) {
+                Some(vec) => {
+                    vec.push(entity.clone());
+                }
+                None => {
+                    map.insert(pos, vec![entity.clone()]);
+                }
+            },
+            None => {
+                let mut new_value = HashMap::new();
+                new_value.insert(pos, vec![entity.clone()]);
+                big_map.insert(game_state, new_value);
+            }
+        }
+    }
+    big_map
 }
 
 impl Robot {
@@ -137,6 +221,30 @@ impl Robot {
         self.hp = MAX_HP;
         self.safety_copy_amount -= 1;
         occupied.push(*respawn_pos);
+    }
+
+    pub fn new(user_name: String, position: Position) -> Self {
+        Robot {
+            user_name,
+            position,
+            facing_direction: Direction::new(0),
+            safety_copy_position: position,
+            safety_copy_number: 0,
+            safety_copy_amount: 4,
+            greatest_checkpoint_reached: 0,
+            alive: true,
+            hp: MAX_HP,
+        }
+    }
+}
+
+impl Player {
+    pub fn new(user_name: String) -> Self {
+        Player {
+            user_name,
+            cards_in_hand: vec![],
+            cards_played: vec![],
+        }
     }
 }
 

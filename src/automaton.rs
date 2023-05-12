@@ -1,12 +1,10 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use crate::{
     commands::{execute, execute_non_moves, ScheduledActions},
     components::{Board, Card, Player, Robot},
     game_states::GameState,
     resolve_movement::{resolve_card_movement, resolve_factory_movement},
 };
+use itertools::Itertools;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
@@ -98,11 +96,10 @@ impl StateAction for GameState {
             }
             GameState::RoundEnd => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
-                let robot_moves = robot_actions.into_iter().map(execute_non_moves).collect();
-                let robot_actions = resolve_factory_movement(robot_moves, board, self);
-                for robot_action in robot_actions {
-                    execute(robot_action);
-                }
+                robot_actions.into_iter().for_each(|action| {
+                    execute_non_moves(action);
+                });
+
                 let mut occupied = robots
                     .iter()
                     .filter(|robot| robot.alive)
@@ -111,6 +108,7 @@ impl StateAction for GameState {
                 robots
                     .iter_mut()
                     .filter(|robot| !robot.alive && robot.safety_copy_amount > 0)
+                    .sorted_by_key(|robot| robot.safety_copy_number)
                     .for_each(|robot| robot.respawn(board, &mut occupied));
             }
         }

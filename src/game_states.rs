@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Start,
