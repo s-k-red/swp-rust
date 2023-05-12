@@ -40,6 +40,7 @@ pub struct GameStore {
     pub players: Vec<Player>,
     pub board: Board,
     pub card_deck: Vec<Card>,
+    pub winners: Vec<String>,
     //    pub robot_settings: RobotSettings,
 }
 
