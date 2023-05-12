@@ -7,7 +7,7 @@ use crate::commands::{
     IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotCommand, TileEntity,
 };
 use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
-use crate::game_states::{self, GameState};
+use crate::game_states::GameState;
 
 const STARTING_LIVES: usize = 3;
 const MAX_HP: i8 = 10;
@@ -37,7 +37,7 @@ pub struct Player {
 #[derive(Debug, Clone, Builder)]
 pub struct GameStore {
     pub robots: Vec<Robot>,
-    pub player: Vec<Player>,
+    pub players: Vec<Player>,
     pub board: Board,
     pub card_deck: Vec<Card>,
     //    pub robot_settings: RobotSettings,
