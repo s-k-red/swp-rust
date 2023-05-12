@@ -7,16 +7,53 @@ use crate::{
     game_states::GameState,
     resolve_movement::{resolve_card_movement, resolve_factory_movement},
 };
+use rand::seq::SliceRandom;
+use rand::thread_rng;
 
 trait StateAction {
-    fn on_entry(&self, robots: &mut [Robot], board: &Board, players: &mut [Player]);
+    fn on_entry(
+        &self,
+        robots: &mut [Robot],
+        card_deck: &[Card],
+        board: &Board,
+        players: &mut [Player],
+    );
 }
 
 impl StateAction for GameState {
-    fn on_entry(&self, robots: &mut [Robot], board: &Board, players: &mut [Player]) {
+    fn on_entry(
+        &self,
+        robots: &mut [Robot],
+        card_deck: &[Card],
+        board: &Board,
+        players: &mut [Player],
+    ) {
         match &self {
             GameState::Start => (),
-            GameState::HandOutCards => todo!(),
+            GameState::HandOutCards => {
+                let mut cards = card_deck.to_vec();
+                cards.shuffle(&mut thread_rng());
+                for player in players {
+                    let robot = robots
+                        .iter()
+                        .find(|robot| robot.user_name == player.user_name)
+                        .expect("player has no robot");
+                    if !robot.alive {
+                        continue;
+                    }
+                    loop {
+                        if cards
+                            .iter()
+                            .take((robot.hp - 1) as usize)
+                            .any(|card| card.is_movement)
+                        {
+                            break;
+                        }
+                        cards.shuffle(&mut thread_rng());
+                    }
+                    player.cards_in_hand = cards.drain(0..(robot.hp - 1) as usize).collect();
+                }
+            }
             GameState::ExecuteCard(register_number) => {
                 let mut cards = players
                     .iter()

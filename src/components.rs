@@ -6,10 +6,9 @@ use std::hash::Hash;
 
 use itertools::Itertools;
 
-use crate::commands::{OnEntryTileEntity, RobotCommand, RobotAction, IndirectTileEntity};
+use crate::commands::{IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotCommand};
 use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
 use crate::game_states::GameState;
-
 
 const STARTING_LIVES: usize = 3;
 const MAX_HP: i8 = 10;
@@ -42,7 +41,7 @@ pub struct GameStore {
     pub player: Vec<Player>,
     pub board: Board,
     pub card_deck: Vec<Card>,
-//    pub robot_settings: RobotSettings,
+    //    pub robot_settings: RobotSettings,
 }
 
 //#[derive(Debug)]
@@ -128,9 +127,11 @@ impl Robot {
                     possible_respawn_pos.push(pos_to_inspect);
                 }
             }
-            
         }
-        let respawn_pos = possible_respawn_pos.iter().find(|pos|! occupied.contains(pos)).expect("tried respawning occupied");
+        let respawn_pos = possible_respawn_pos
+            .iter()
+            .find(|pos| !occupied.contains(pos))
+            .expect("tried respawning occupied");
         self.position = *respawn_pos;
         self.alive = true;
         self.hp = MAX_HP;
@@ -139,9 +140,10 @@ impl Robot {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Card {
     pub id: u32,
+    pub is_movement: bool,
     pub commands: Vec<RobotCommand>,
 }
 

@@ -1,4 +1,0 @@
-{
-    "rust-analyzer.check.overrideCommand": null,
-    "rust-analyzer.check.command": "clippy"
-}
