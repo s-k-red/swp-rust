@@ -1,12 +1,38 @@
 use crate::{
     commands::{execute, execute_non_moves, ScheduledActions},
-    components::{Board, Card, Player, Robot},
+    components::{Board, Card, GameStore, Player, Robot},
     game_states::GameState,
     resolve_movement::{resolve_card_movement, resolve_factory_movement},
 };
 use itertools::Itertools;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
+
+pub struct GameAutomaton {
+    state_transitions: Vec<GameState>, //without HandOutCards
+}
+
+impl GameAutomaton {
+    pub fn hand_out_cards(game_store: &mut GameStore) {
+        GameState::HandOutCards.on_entry(
+            &mut game_store.robots,
+            &game_store.card_deck,
+            &game_store.board,
+            &mut game_store.players,
+        )
+    }
+
+    pub fn round_trip(&self, game_store: &mut GameStore) {
+        for game_state in &self.state_transitions {
+            game_state.on_entry(
+                &mut game_store.robots,
+                &game_store.card_deck,
+                &game_store.board,
+                &mut game_store.players,
+            )
+        }
+    }
+}
 
 trait StateAction {
     fn on_entry(
