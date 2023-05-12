@@ -7,11 +7,11 @@ use rulinalg::matrix::{Matrix, BaseMatrix};
 use crate::neural_net::activation_function::SigmoidActivationFunction;
 
 use self::activation_function::ActivationFunction;
-mod matrix_utils;
+pub mod matrix_utils;
 mod activation_function;
 
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNet{
     input_nodes: usize,
     hidden_layers: usize,
@@ -21,6 +21,10 @@ pub struct NeuralNet{
     activation_function_key: String,
     weights: Vec<Matrix<f64>>,
     biases: Vec<Matrix<f64>>
+}
+
+impl Eq for NeuralNet {
+    fn assert_receiver_is_total_eq(&self) {}
 }
 
 

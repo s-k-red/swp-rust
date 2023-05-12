@@ -12,3 +12,11 @@ itertools = "0.10.5"
 num = "0.4.0"
 rulinalg="0.4.2"
 rand = "0.8.5"
+
+[dependencies.uuid]
+version = "1.3.2"
+features = [
+    "v4",                # Lets you generate random UUIDs
+    "fast-rng",          # Use a faster (but still sufficiently random) RNG
+    "macro-diagnostics", # Enable better diagnostics for compile-time UUIDs
+]

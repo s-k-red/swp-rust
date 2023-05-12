@@ -1,23 +1,25 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::{collections::HashMap};
-
-use crate::components::GameStore;
-
 use super::bot::Bot;
 
 const PUPULATION_SIZE: i32 = 30;
 
 pub struct Trainer {
-    population: HashMap<Bot, GameStore>
+    population: Vec<Bot>
 }
 
 impl Trainer {
     pub fn new() -> Trainer {
-        let mut pop = HashMap::new();
+        let mut pop = Vec::new();
 
-        pop.insert(Bot{}, GameStore{ robots: todo!(), players: todo!(), board: todo!(), card_deck: todo!(), winners: todo!() });
+        for i in 0..PUPULATION_SIZE {
+            print!("generating bot {} of {}..", i, PUPULATION_SIZE);
+            let bot = Bot::new_random();
+            println!("done!");
+
+            pop.push(bot);
+        }
 
         Trainer { population: pop }
     }
