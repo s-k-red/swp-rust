@@ -6,7 +6,7 @@ use std::hash::Hash;
 
 use itertools::Itertools;
 
-use crate::commands::{OnEntryTileEntity, RobotCommand, TileEntity};
+use crate::commands::{OnEntryTileEntity, RobotCommand, RobotAction, IndirectTileEntity};
 use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
 use crate::game_states::GameState;
 
@@ -55,8 +55,9 @@ pub struct GameStore {
 pub struct Board {
     pub walls: HashSet<Wall>,
     pos_inbounds: HashSet<Position>,
-    pub tile_eintities: HashMap<GameState, Vec<TileEntity>>,
-    pub on_entry_tile_eintities: HashMap<GameState, Vec<OnEntryTileEntity>>,
+    pub direct_tile_eintities: HashMap<GameState, HashMap<Position, Vec<RobotAction>>>,
+    pub indirect_tile_eintities: HashMap<GameState, Vec<IndirectTileEntity>>,
+    pub on_entry_tile_eintities: HashMap<GameState, HashMap<Position, Vec<OnEntryTileEntity>>>,
 }
 
 #[derive(Debug, Clone)]

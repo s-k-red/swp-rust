@@ -1,14 +1,9 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
-use std::collections::HashMap;
 
 use crate::{
-    commands::{
-        execute, execute_non_moves, RobotActionInPlace, ScheduledActions,
-        TileEntity,
-    },
+    commands::{execute, execute_non_moves, ScheduledActions},
     components::{Board, Card, Player, Robot},
-    datatypes::Position,
     game_states::GameState,
     resolve_movement::{resolve_card_movement, resolve_factory_movement},
 };
@@ -71,11 +66,15 @@ impl StateAction for GameState {
                 for robot_action in robot_actions {
                     execute(robot_action);
                 }
-                let mut occupied = robots.iter().filter(|robot| robot.alive).map(|robot| robot.position).collect::<Vec<_>>();
-                    robots
-                        .iter_mut()
-                        .filter(|robot| !robot.alive && robot.safety_copy_amount > 0)
-                        .for_each(|robot| {robot.respawn(board,&mut occupied)});
+                let mut occupied = robots
+                    .iter()
+                    .filter(|robot| robot.alive)
+                    .map(|robot| robot.position)
+                    .collect::<Vec<_>>();
+                robots
+                    .iter_mut()
+                    .filter(|robot| !robot.alive && robot.safety_copy_amount > 0)
+                    .for_each(|robot| robot.respawn(board, &mut occupied));
             }
         }
     }
@@ -86,37 +85,32 @@ fn calculate_actions_from_tile_entities<'a>(
     robots: &'a mut [Robot],
     board: &Board,
 ) -> Vec<ScheduledActions<'a>> {
-    let active_tile_commands = board
-        .tile_eintities
-        .get(game_state)
-        .unwrap_or(&vec![])
-        .clone();
-    let mut action_map = robots
+    let mut actions = robots
         .iter_mut()
-        .filter(|robot| robot.alive)
-        .map(|robot| (robot.position, ScheduledActions::new(robot)))
-        .collect::<HashMap<_, _>>();
+        .map(ScheduledActions::new)
+        .collect::<Vec<_>>();
 
-    for tile_command in active_tile_commands {
-        match tile_command {
-            TileEntity::FromRobotCommand(pos, cmd) => {
-                if let Some(actions) = action_map.get_mut(&pos) {
-                    actions.push(cmd);
-                }
-            }
-            TileEntity::Laser(pos, dir, intensity) => {
-                let laser_positions = board.all_pos_inbounds_in_direction_until_blocked(pos, dir);
-                for pos in laser_positions {
-                    match action_map.get_mut(&pos) {
-                        Some(actions) => {
-                            actions.push(RobotActionInPlace::TakeDamage(intensity));
-                            break;
-                        }
-                        None => continue,
-                    }
-                }
-            }
-        };
+    let indirect_entities = board
+        .indirect_tile_eintities
+        .get(game_state)
+        .cloned()
+        .unwrap_or_default();
+
+    for indirect_entity in indirect_entities {
+        actions = indirect_entity.convert(board, actions);
     }
-    action_map.into_iter().map(|entry| entry.1).collect()
+
+    for action in &mut actions {
+        if let Some(tile_actions) = board
+            .direct_tile_eintities
+            .get(game_state)
+            .and_then(|all_active| all_active.get(&action.robot.position))
+        {
+            tile_actions
+                .iter()
+                .for_each(|tile_action| action.push(tile_action.clone()));
+        }
+    }
+
+    actions
 }
