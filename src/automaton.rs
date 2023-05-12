@@ -38,7 +38,7 @@ impl StateAction for GameState {
                         .iter()
                         .find(|robot| robot.user_name == player.user_name)
                         .expect("player has no robot");
-                    if !robot.alive {
+                    if !robot.alive || robot.hp == 0 {
                         continue;
                     }
                     loop {
