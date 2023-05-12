@@ -230,7 +230,7 @@ impl Robot {
             facing_direction: Direction::new(0),
             safety_copy_position: position,
             safety_copy_number: 0,
-            safety_copy_amount: 4,
+            safety_copy_amount: STARTING_LIVES,
             greatest_checkpoint_reached: 0,
             alive: true,
             hp: MAX_HP,
