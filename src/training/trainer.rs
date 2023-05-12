@@ -17,7 +17,7 @@ impl Trainer {
     pub fn new() -> Trainer {
         let mut pop = HashMap::new();
 
-        pop.insert(Bot{}, GameStore{ robots: todo!(), players: todo!(), board: todo!(), card_deck: todo!() });
+        pop.insert(Bot{}, GameStore{ robots: todo!(), players: todo!(), board: todo!(), card_deck: todo!(), winners: todo!() });
 
         Trainer { population: pop }
     }
