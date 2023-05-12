@@ -1,8 +1,6 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
-use crate::components::Robot;
+use crate::components::{Board, Robot};
 use crate::datatypes::{Direction, Position};
+use crate::game_states::GameState;
 
 #[derive(Debug, Clone)]
 pub enum RobotCommand {
@@ -27,15 +25,22 @@ pub enum RobotActionInPlace {
 
 #[derive(Debug, Clone)]
 pub enum TileEntity {
-    FromRobotCommand(Position, RobotAction),
+    Direct(Vec<GameState>, Position, RobotAction),
+    Indirect(Vec<GameState>, IndirectTileEntity),
+    OnEntry(Vec<GameState>, Position, OnEntryTileEntity),
+    Empty(Position),
+    Wall(Position, Direction),
+}
+
+#[derive(Debug, Clone)]
+pub enum IndirectTileEntity {
     Laser(Position, Direction, i8),
 }
 
 #[derive(Debug, Clone)]
 pub struct OnEntryTileEntity {
-    pub position: Position,
     pub action: RobotActionInPlace,
-    pub direction: Option<Direction>,
+    pub activation_direction: Option<Direction>,
 }
 
 pub struct ScheduledActions<'a> {
@@ -135,5 +140,26 @@ pub fn execute(actions: ScheduledActions) {
     }
     for action in &actions.actions {
         action.action(actions.robot)
+    }
+}
+
+impl IndirectTileEntity {
+    pub fn convert<'a>(
+        &self,
+        board: &Board,
+        mut actions: Vec<ScheduledActions<'a>>,
+    ) -> Vec<ScheduledActions<'a>> {
+        match self {
+            IndirectTileEntity::Laser(pos, dir, intensity) => {
+                for pos in board.all_pos_inbounds_in_direction_until_blocked(*pos, *dir) {
+                    for action in &mut actions {
+                        if action.robot.position == pos {
+                            action.push(RobotActionInPlace::TakeDamage(*intensity));
+                        }
+                    }
+                }
+            }
+        }
+        actions
     }
 }

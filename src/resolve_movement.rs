@@ -1,7 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
-
 use itertools::Itertools;
 
 use crate::{
@@ -51,8 +47,6 @@ fn cancel_with_check<'a>(
         };
         if tuple_represents_collision {
             any_cancelled = true;
-            let action_pos_tuple_a = robot_moves.get(a).unwrap();
-            let action_pos_tuple_b = robot_moves.get(b).unwrap();
 
             robot_moves.get_mut(a).unwrap().mov = None;
             robot_moves.get_mut(b).unwrap().mov = None;
@@ -61,7 +55,11 @@ fn cancel_with_check<'a>(
     (robot_moves, any_cancelled)
 }
 
-fn test_oppoosing(pair1: (Position, Position), pair2: (Position, Position), board: &Board) -> bool {
+fn test_oppoosing(
+    pair1: (Position, Position),
+    pair2: (Position, Position),
+    _board: &Board,
+) -> bool {
     pair1.0 == pair2.1 && pair1.1 == pair2.0
 }
 fn test_moving_to_same(
@@ -95,7 +93,7 @@ fn resolve_card_movement_rec<'a>(
     let move_vector = robot_moves
         .iter()
         .find(|mov| mov.mov.is_some() && !resolved_positions.contains(&mov.robot.position))
-        .map(|mov| (mov.robot.position, mov.mov.clone().unwrap()));
+        .map(|mov| (mov.robot.position, mov.mov.unwrap()));
 
     if let Some(move_vector_unwrap) = move_vector {
         resolved_positions.push(move_vector_unwrap.0);
@@ -180,36 +178,32 @@ pub fn cancel_walls<'a>(
     )
 }
 
-fn calculate_action_for_entry<'a>(
+fn calculate_action_for_entry(
     game_state: &GameState,
     robot: &Robot,
     move_direction: Direction,
     board: &Board,
-) -> Option<RobotActionInPlace> {
-    if !board.is_inbounds({
-        let ref this = move_direction;
-        robot.position + Position::from(move_direction)
-    }) {
-        return Some(RobotActionInPlace::Destroy);
+) -> Vec<RobotActionInPlace> {
+    let destination = robot.position + Position::from(move_direction);
+    if !board.is_inbounds(destination) {
+        return vec![RobotActionInPlace::Destroy];
     }
-
-    let active_tile_commands = board
+    board
         .on_entry_tile_eintities
         .get(game_state)
-        .unwrap_or(&vec![])
-        .clone();
-
-    for tile_command in active_tile_commands {
-        if tile_command.position == robot.position + move_direction.into() {
-            match tile_command.direction {
+        .and_then(|hash_map| hash_map.get(&destination).cloned())
+        .unwrap_or_default()
+        .into_iter()
+        .filter_map(|entry| {
+            match entry.activation_direction {
                 Some(dir) => {
                     if dir == move_direction {
-                        return Some(tile_command.action);
+                        return Some(entry.action);
                     }
                 }
-                None => return Some(tile_command.action),
+                None => return Some(entry.action),
             }
-        }
-    }
-    None
+            None
+        })
+        .collect::<Vec<_>>()
 }

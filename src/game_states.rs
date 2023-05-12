@@ -1,7 +1,4 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum GameState {
     Start,
     HandOutCards,
@@ -10,7 +7,7 @@ pub enum GameState {
     RoundEnd,
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub enum FactoryState {
     ExpressBelt,
     StandartBelt,

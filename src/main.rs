@@ -1,12 +1,16 @@
-use crate::{datatypes::{Direction, Position}};
+#[macro_use]
+extern crate derive_builder;
 
-pub mod commands;
-pub mod datatypes;
-mod components;
-mod game_states;
+use crate::datatypes::{Direction, Position};
+
 mod automaton;
+pub mod commands;
+mod components;
+pub mod datatypes;
+mod game_states;
 mod resolve_movement;
 mod neural_net;
+pub mod setup;
 fn main() {
     let direction = Direction::new(3);
     println!("{:?}", Position::from(direction.turn(Direction::new(1))));

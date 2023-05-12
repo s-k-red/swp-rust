@@ -71,7 +71,7 @@ impl NeuralNet {
         assert!(input.len() == self.input_nodes, "Wrong dimensions!");
 
         let activation_function = SigmoidActivationFunction{};
-
+        
         
     }
 }
