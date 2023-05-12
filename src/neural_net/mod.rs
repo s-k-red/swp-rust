@@ -1,9 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use rulinalg::matrix::Matrix;
+use itertools::Itertools;
+use rulinalg::matrix::{Matrix, BaseMatrix};
 
 use crate::neural_net::activation_function::SigmoidActivationFunction;
+
+use self::activation_function::ActivationFunction;
 mod matrix_utils;
 mod activation_function;
 
@@ -69,11 +72,29 @@ impl NeuralNet {
 impl NeuralNet {
     pub fn guess(&self, input: Vec<f64>) -> Vec<f64> {
         assert!(input.len() == self.input_nodes, "Wrong dimensions!");
+        
+        let fun: SigmoidActivationFunction = SigmoidActivationFunction{};
+        let mut output = Matrix::new(input.len(), 1, input);
 
-        let activation_function = SigmoidActivationFunction{};
-        
-        
+        for i in 0..self.hidden_layers {
+            output = NeuralNet::calculate_layer(&self.weights[i], &self.biases[i], &output, &fun)
+        }
+
+        output.col(0).iter().copied().collect_vec()
+    }
+
+    fn calculate_layer(weights: &Matrix<f64>, biases: &Matrix<f64>, input: &Matrix<f64>, func: &dyn ActivationFunction) -> Matrix<f64> {
+        let result = weights * input + biases;
+
+        NeuralNet::apply_activation_function(result, false, func)
+    }
+
+    fn apply_activation_function(input: Matrix<f64>, derivative: bool, func: &dyn ActivationFunction) -> Matrix<f64> {
+        if derivative {
+            func.apply_derivative_of_activation_func_to_matrix(input)
+        } else {
+            func.apply_activation_func_to_matrix(input)
+        }
     }
 }
-
 

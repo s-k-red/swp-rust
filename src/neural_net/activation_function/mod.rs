@@ -4,11 +4,10 @@
 use rulinalg::matrix::{Matrix, BaseMatrix};
 
 pub trait ActivationFunction {
-    fn apply_activation_func_to_matrix(matrix: Matrix<f64>) -> Matrix<f64> where Self: Sized;
-    fn apply_derivative_of_activation_func_to_matrix(matrix: Matrix<f64>) -> Matrix<f64> where Self: Sized;
-    fn get_name() -> String where Self: Sized;
+    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64>;
+    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64>;
+    fn get_name(&self) -> String;
 }
-
 // pub struct ActivationFunctionFactory {
 //     activation_func_map: HashMap<String, Box<dyn ActivationFunction>>
 // }
@@ -30,7 +29,7 @@ pub trait ActivationFunction {
 pub struct SigmoidActivationFunction {}
 
 impl ActivationFunction for SigmoidActivationFunction {
-    fn apply_activation_func_to_matrix( matrix: Matrix<f64>) -> Matrix<f64> {
+    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64> {
         let mut data = Vec::new();
 
         for i in 0..matrix.rows() {
@@ -43,7 +42,7 @@ impl ActivationFunction for SigmoidActivationFunction {
         Matrix::new(matrix.rows(), matrix.cols(), data)
     }
 
-    fn apply_derivative_of_activation_func_to_matrix(matrix: Matrix<f64>) -> Matrix<f64> {
+    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64> {
         let mut data = Vec::new();
 
         for i in 0..matrix.rows() {
@@ -56,7 +55,7 @@ impl ActivationFunction for SigmoidActivationFunction {
         Matrix::new(matrix.rows(), matrix.cols(), data)
     }
 
-    fn get_name() -> String {
+    fn get_name(&self) -> String {
         String::from("SIGMOID")
     }
 }

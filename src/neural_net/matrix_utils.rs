@@ -17,3 +17,7 @@ pub fn copy_matrix_vector(from: Vec<Matrix<f64>>) -> Vec<Matrix<f64>>{
 
     vals
 }
+
+pub fn array_to_matrix(i: Vec<f64>) -> Matrix<f64> {
+    Matrix::new(i.len(), 1, i)
+}

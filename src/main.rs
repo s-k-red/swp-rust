@@ -15,6 +15,7 @@ pub mod datatypes;
 mod game_states;
 mod resolve_movement;
 mod neural_net;
+mod training;
 pub mod setup;
 fn main() {
     let direction = Direction::new(3);

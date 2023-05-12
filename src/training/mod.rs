@@ -1,0 +1,2 @@
+mod trainer;
+mod bot;
