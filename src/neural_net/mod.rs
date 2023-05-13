@@ -4,7 +4,7 @@
 use itertools::Itertools;
 use rulinalg::matrix::{Matrix, BaseMatrix};
 
-use crate::neural_net::activation_function::SigmoidActivationFunction;
+use crate::{neural_net::activation_function::SigmoidActivationFunction, config::MUTATION_RATE};
 
 use self::activation_function::ActivationFunction;
 pub mod matrix_utils;
@@ -87,6 +87,34 @@ impl NeuralNet {
         output.col(0).iter().copied().collect_vec()
     }
 
+    pub fn mutate(&mut self){
+        let mut weights = Vec::new();
+        let mut biases = Vec::new();
+
+        for w in self.weights.as_slice() {
+            weights.push(matrix_utils::mutate(w, MUTATION_RATE));
+        }
+
+        for b in self.biases.as_slice() {
+            biases.push(matrix_utils::mutate(b, MUTATION_RATE));
+        }
+
+        self.weights = weights;
+        self.biases = biases;
+    }
+
+    pub fn save(&self){
+        for (i, w) in self.weights.iter().enumerate() {
+            let name = format!("{}weights.txt", i);
+            matrix_utils::save_matrix(w.clone(), &name);
+        }
+
+        for (i, b)  in self.biases.iter().enumerate() {
+            let name = format!("{}mut.txt", i);
+            matrix_utils::save_matrix(b.clone(), &name);
+        }
+    }
+
     fn calculate_layer(weights: &Matrix<f64>, biases: &Matrix<f64>, input: &Matrix<f64>, func: &dyn ActivationFunction) -> Matrix<f64> {
         let result = weights * input + biases;
 
@@ -101,4 +129,3 @@ impl NeuralNet {
         }
     }
 }
-

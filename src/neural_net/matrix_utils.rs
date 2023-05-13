@@ -25,7 +25,7 @@ pub fn save_matrix(matrix: Matrix<f64>, filepath: &str){
 
     for row in 0..matrix.rows(){
         for col in 0..matrix.cols() {
-            let val = vals.get(col * row+1);
+            let val = vals.get(matrix.cols() * row + col);
             output.push_str(&val.unwrap().to_string());
             output.push('|');
         }
@@ -43,4 +43,23 @@ pub fn copy_matrix_vector(from: Vec<Matrix<f64>>) -> Vec<Matrix<f64>>{
 
 pub fn array_to_matrix(i: Vec<f64>) -> Matrix<f64> {
     Matrix::new(i.len(), 1, i)
+}
+
+pub fn mutate(mat: &Matrix<f64>, rate: f64) -> Matrix<f64> {
+    let mut vals = Vec::new();
+
+    for row in 0..mat.rows() {
+        let mut rng = rand::thread_rng();
+
+        for col in 0..mat.cols() {
+            let current_val = *mat.data().get(mat.cols() * row + col).unwrap();
+            if rng.gen::<f64>() < rate { //TODO: maybe change?
+                vals.push(rng.gen::<f64>() * 2.0 - 1.0); //TODO: maybe change? for now completely random
+            } else {
+                vals.push(current_val);   
+            }
+        }
+    }
+
+    Matrix::new(mat.rows(), mat.cols(), vals)
 }
