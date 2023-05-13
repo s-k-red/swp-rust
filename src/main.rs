@@ -64,5 +64,6 @@ pub fn run_game(
         })
         .collect::<Vec<_>>();
     game_automaton.round_trip(&mut game_store);
+    GameAutomaton::hand_out_cards(&mut game_store);
     game_store
 }
