@@ -1,10 +1,11 @@
 use itertools::Itertools;
 
 use crate::{
-    commands::{RobotActionInPlace, ScheduledActions, ScheduledMove},
+    commands::RobotActionInPlace,
     components::{Board, Robot},
     datatypes::{Direction, Position},
     game_states::GameState,
+    scheduled_commands::{ScheduledActions, ScheduledMove},
 };
 
 pub fn resolve_factory_movement<'a>(

@@ -6,24 +6,30 @@ use std::collections::HashMap;
 use automaton::GameAutomaton;
 use components::{Card, GameStore};
 
-use crate::{datatypes::{Direction, Position}, training::trainer::Trainer, neural_net::matrix_utils, config::{INPUT_NODES, HIDDEN_LAYERS}};
+use crate::{
+    config::{HIDDEN_LAYERS, INPUT_NODES},
+    datatypes::{Direction, Position},
+    neural_net::matrix_utils,
+    training::trainer::Trainer,
+};
 
 mod automaton;
 pub mod commands;
 mod components;
+mod config;
 pub mod datatypes;
 mod game_states;
-mod resolve_movement;
 mod neural_net;
-mod training;
+mod resolve_movement;
+pub mod scheduled_commands;
 pub mod setup;
-mod config;
+mod training;
 fn main() {
     let direction = Direction::new(3);
     println!("{:?}", Position::from(direction.turn(Direction::new(1))));
-    println!("{:?}",direction);
+    println!("{:?}", direction);
 
-    let trainer = Trainer::new();    
+    let trainer = Trainer::new();
 }
 
 pub fn start_game(mut game_store: GameStore) -> GameStore {
