@@ -4,6 +4,6 @@ pub const INPUT_NODES: usize = 9 + 5 + 2 + 1 + 1 + 1 + 6 * 2 + 4 * 12 * 12 * 4 +
 
 //Amount of hand cards
 pub const OUTPUT_NODES: usize = 9;
-pub const HIDDEN_LAYERS: usize = 2;
+pub const HIDDEN_LAYERS: usize = 1;
 pub const MUTATION_RATE: f64 = 0.1; //10%
 pub const GENERATIONS: usize = 30;
