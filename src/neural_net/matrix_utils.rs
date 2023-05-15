@@ -35,16 +35,6 @@ pub fn save_matrix(matrix: Matrix<f64>, filepath: &str){
     let res = fs::write(filepath, output);
 }
 
-pub fn copy_matrix_vector(from: Vec<Matrix<f64>>) -> Vec<Matrix<f64>>{
-    let vals = Vec::new();
-
-    vals
-}
-
-pub fn array_to_matrix(i: Vec<f64>) -> Matrix<f64> {
-    Matrix::new(i.len(), 1, i)
-}
-
 pub fn mutate(mat: &Matrix<f64>, rate: f64) -> Matrix<f64> {
     let mut vals = Vec::new();
 
