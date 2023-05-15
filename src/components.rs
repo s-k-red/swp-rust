@@ -10,7 +10,7 @@ use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
 use crate::game_states::GameState;
 
 const STARTING_LIVES: usize = 3;
-const MAX_HP: i8 = 10;
+pub const MAX_HP: i8 = 10;
 const HAND_SIZE: i8 = 5;
 
 #[derive(Debug, Clone)]
@@ -24,6 +24,7 @@ pub struct Robot {
     pub greatest_checkpoint_reached: usize,
     pub alive: bool,
     pub hp: i8,
+    pub deaths: i8
     //pub locked_card_slots: Vec<bool>, not needed in this abstraction
 }
 
@@ -188,6 +189,7 @@ fn insert_help<T: Clone>(
 
 impl Robot {
     pub fn respawn(&mut self, board: &Board, occupied: &mut Vec<Position>) {
+        self.deaths += 1;
         let mut possible_respawn_pos = vec![self.safety_copy_position];
         let mut visited = vec![];
 
@@ -233,6 +235,7 @@ impl Robot {
             greatest_checkpoint_reached: 0,
             alive: true,
             hp: MAX_HP,
+            deaths: 0
         }
     }
 }

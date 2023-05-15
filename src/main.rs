@@ -37,9 +37,8 @@ fn main() {
     // bot.save_brain();
 }
 
-pub fn start_game(mut game_store: GameStore) -> GameStore {
-    GameAutomaton::hand_out_cards(&mut game_store);
-    game_store
+pub fn start_game(mut game_store: &mut GameStore) {
+    GameAutomaton::hand_out_cards(game_store);
 }
 
 pub fn run_game(
