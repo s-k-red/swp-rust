@@ -29,7 +29,7 @@ pub enum TileEntity {
     Direct(Vec<GameState>, Position, RobotAction),
     Indirect(Vec<GameState>, IndirectTileEntity),
     OnEntry(Vec<GameState>, Position, OnEntryTileEntity),
-    Empty(Position),
+    Inbounds(Position),
     Wall(Position, Direction),
 }
 

@@ -40,7 +40,8 @@ pub struct GameStore {
     pub players: Vec<Player>,
     pub board: Board,
     pub card_deck: Vec<Card>,
-    pub winners: Vec<String>,
+    pub winners: Option<Vec<String>>,
+    pub highest_chekcpoint: usize,
     //    pub robot_settings: RobotSettings,
 }
 
@@ -119,8 +120,8 @@ impl Board {
                 TileEntity::Direct(game_states, pos, action) => {
                     direct_tile_eintities =
                         insert_help(game_states, pos, action, direct_tile_eintities);
-                    pos_inbounds.insert(pos);
                 }
+
                 TileEntity::Indirect(game_states, entity) => {
                     for game_state in game_states {
                         match indirect_tile_eintities.get_mut(&game_state) {
@@ -132,22 +133,19 @@ impl Board {
                             }
                         }
                     }
-
-                    pos_inbounds.insert(match entity {
-                        IndirectTileEntity::Laser(pos, _, _) => pos,
-                    });
                 }
+
                 TileEntity::OnEntry(game_states, pos, entity) => {
                     on_entry_tile_eintities =
                         insert_help(game_states, pos, entity, on_entry_tile_eintities);
+                }
+
+                TileEntity::Inbounds(pos) => {
                     pos_inbounds.insert(pos);
                 }
-                TileEntity::Empty(pos) => {
-                    pos_inbounds.insert(pos);
-                }
+
                 TileEntity::Wall(pos, dir) => {
                     walls.insert(Wall(pos, pos + dir.into()));
-                    pos_inbounds.insert(pos);
                 }
             }
         }
@@ -237,6 +235,10 @@ impl Robot {
             hp: MAX_HP,
         }
     }
+}
+
+impl GameStore {
+    fn calulate_winers(&mut self) {}
 }
 
 impl Player {

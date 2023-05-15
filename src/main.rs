@@ -7,7 +7,9 @@ use automaton::GameAutomaton;
 use components::{Card, GameStore};
 
 use crate::{
-    datatypes::{Direction, Position}, training::bot::Bot, neural_net::matrix_utils
+    datatypes::{Direction, Position},
+    neural_net::matrix_utils,
+    training::bot::Bot,
 };
 
 mod automaton;
@@ -19,6 +21,7 @@ mod game_states;
 mod neural_net;
 mod resolve_movement;
 pub mod scheduled_commands;
+mod serialization;
 pub mod setup;
 mod training;
 fn main() {

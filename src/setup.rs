@@ -20,7 +20,8 @@ pub fn convert(
         )
         .card_deck(card_deck)
         .board(Board::new(board))
-        .winners(vec![])
+        .winners(None)
+        .highest_chekcpoint(todo!())
         .build();
     match res {
         Ok(game_store) => game_store,
