@@ -9,7 +9,7 @@ use components::{Card, GameStore};
 use crate::{
     datatypes::{Direction, Position},
     neural_net::matrix_utils,
-    training::bot::Bot,
+    training::{bot::Bot, trainer::Trainer},
 };
 
 mod automaton;
@@ -30,10 +30,11 @@ fn main() {
     println!("{:?}", direction);
 
     //let trainer = Trainer::new();
-    let mut bot = Bot::new_random();
+    let t = Trainer::new();
     //bot.save_brain();
     // bot.mutate();
-    // pause();
+    println!("{}", t.population.len());
+    pause();
     // bot.save_brain();
 }
 

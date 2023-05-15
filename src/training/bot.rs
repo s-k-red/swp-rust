@@ -37,26 +37,26 @@ impl Bot {
     pub fn calc_own_fitness(&mut self, game_store: &GameStore) -> f64 {
         //maybe this has to be done after each round in the future
         let mut fitness = 0.0;
-        let mut robot = game_store.robots.iter().find_or_first(|r| r.user_name.eq(&self.id));
-        let fake_robot = Robot::new(String::from("lul"), Position {x:0, y:0});
+        let robot = game_store.robots.iter().find_or_first(|r| r.user_name.eq(&self.id)).unwrap();
 
-        if robot.is_none(){
-            return 0.0;
+        match &game_store.winners {
+            Some(winners) => {
+                if winners.contains(&robot.user_name) {
+                    fitness += 1.0;
+                } 
+            },
+            None => todo!()
         }
+    
+        fitness += robot.greatest_checkpoint_reached as f64 / 6.0; //TODO!!!!! change to max num of checkpoints
 
-        if game_store.winners.contains(&self.id) {
-            fitness += 1.0;
-        } 
-        
-        fitness += robot.get_or_insert(&fake_robot).greatest_checkpoint_reached as f64 / 6.0; //TODO!!!!! change to max num of checkpoints
+        fitness -= (robot.deaths as f64 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
 
-        fitness -= (robot.get_or_insert(&fake_robot).deaths as f64 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
-
-        fitness -= robot.get_or_insert(&fake_robot).hp as f64 / MAX_HP as f64;
+        fitness -= robot.hp as f64 / MAX_HP as f64;
 
         self.own_fitness = fitness.clone();
 
-        fitness
+        return fitness
     }
 
     pub fn mutate(&mut self){

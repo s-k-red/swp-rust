@@ -63,9 +63,9 @@ impl NeuralNet {
     
         for num in 0..hidden_layers+1 {
             if num == hidden_layers {
-                biases.push(matrix_utils::random_matrix(output_nodes, 1, -1.0, 1.0))
+                biases.push(matrix_utils::random_matrix(output_nodes, 1, -1.0, 1.0));
             } else {
-                biases.push(matrix_utils::random_matrix(hidden_nodes, 1, -1.0, 1.0))
+                biases.push(matrix_utils::random_matrix(hidden_nodes, 1, -1.0, 1.0));
             }
         }
     
