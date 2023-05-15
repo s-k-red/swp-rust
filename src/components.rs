@@ -24,8 +24,7 @@ pub struct Robot {
     pub greatest_checkpoint_reached: usize,
     pub alive: bool,
     pub hp: i8,
-    pub deaths: i8
-    //pub locked_card_slots: Vec<bool>, not needed in this abstraction
+    pub deaths: i8, //pub locked_card_slots: Vec<bool>, not needed in this abstraction
 }
 
 #[derive(Debug, Clone)]
@@ -42,7 +41,7 @@ pub struct GameStore {
     pub board: Board,
     pub card_deck: Vec<Card>,
     pub winners: Option<Vec<String>>,
-    pub highest_chekcpoint: usize,
+    pub highest_checkpoint: usize,
     //    pub robot_settings: RobotSettings,
 }
 
@@ -235,13 +234,38 @@ impl Robot {
             greatest_checkpoint_reached: 0,
             alive: true,
             hp: MAX_HP,
-            deaths: 0
+            deaths: 0,
         }
     }
 }
 
 impl GameStore {
-    fn calulate_winers(&mut self) {}
+    pub fn calulate_winers(&mut self) {
+        let winners = self
+            .robots
+            .iter()
+            .filter(|robot| robot.greatest_checkpoint_reached == self.highest_checkpoint)
+            .map(|robot| robot.user_name.clone())
+            .collect::<Vec<_>>();
+        if !winners.is_empty() {
+            self.winners = Some(winners)
+        }
+        //
+        //else if self.robots.iter().all(|robot| !robot.alive) {
+        //    self.winners = Some(
+        //        self.robots
+        //            .iter()
+        //            .max_set_by(|robot, other_robot| {
+        //                robot
+        //                    .greatest_checkpoint_reached
+        //                    .cmp(&other_robot.greatest_checkpoint_reached)
+        //            })
+        //            .iter()
+        //            .map(|robot| robot.user_name.clone())
+        //            .collect::<Vec<_>>(),
+        //    )
+        //}
+    }
 }
 
 impl Player {

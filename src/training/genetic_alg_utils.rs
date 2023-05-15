@@ -1,11 +1,13 @@
 use rand::Rng;
 
-use crate::{components::{GameStore, Robot, Board, Player}, datatypes::Position};
+use crate::{
+    components::{Board, GameStore, Player, Robot},
+    datatypes::Position,
+};
 
 use super::bot::Bot;
 
-pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameStore)>{
-
+pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameStore)> {
     let mut new_gen = Vec::new();
 
     calc_fitness(last_gen);
@@ -13,19 +15,23 @@ pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameSt
         let mut b = pick_bot(&last_gen).clone(); //crossover in the future?
         let id = b.id.clone();
         b.mutate();
-        new_gen.push((b, GameStore { 
-            robots: vec![ Robot::new(id.clone(), Position { x: 0, y: 7 })], 
-            players: vec![Player::new(id.clone())], 
-            board: Board::new(Vec::new()), 
-            card_deck: Vec::new(), 
-            winners: None,
-            highest_chekcpoint: 6 })); //TODO change
+        new_gen.push((
+            b,
+            GameStore {
+                robots: vec![Robot::new(id.clone(), Position { x: 0, y: 7 })],
+                players: vec![Player::new(id.clone())],
+                board: Board::new(Vec::new()),
+                card_deck: Vec::new(),
+                winners: None,
+                highest_checkpoint: 6,
+            },
+        )); //TODO change
     }
 
     new_gen
 }
 
-fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot{
+fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot {
     let mut rnd = rand::thread_rng();
     let mut index = 0;
     let mut r = rnd.gen::<f64>();
@@ -43,7 +49,7 @@ fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot{
 fn calc_fitness(last_gen: &mut Vec<(Bot, GameStore)>) {
     let mut sum = 0.0;
 
-    for (bot, gs) in last_gen.iter_mut() { 
+    for (bot, gs) in last_gen.iter_mut() {
         sum += bot.calc_own_fitness(gs);
     }
 

@@ -21,7 +21,7 @@ pub fn convert(
         .card_deck(card_deck)
         .board(Board::new(board))
         .winners(None)
-        .highest_chekcpoint(3) //TODO
+        .highest_checkpoint(3) //TODO
         .build();
     match res {
         Ok(game_store) => game_store,
