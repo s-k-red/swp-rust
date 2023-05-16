@@ -39,7 +39,7 @@ pub enum IndirectTileEntitySerialize {
 }
 pub enum OnEntryTileEntitySerialize {
     WithDirection(RobotActionInPlaceSerialize, Direction),
-    withoutDirection(RobotActionInPlaceSerialize),
+    WithoutDirection(RobotActionInPlaceSerialize),
 }
 
 impl From<TileSerialize> for TileEntity {
@@ -63,31 +63,35 @@ impl From<TileSerialize> for TileEntity {
                     }
                 },
             ),
-            TileEntitySerialize::OnEntry(game_states, action) => TileEntity::OnEntry(
-                game_states,
-                value.position,
-                OnEntryTileEntity {
-                    action: match action {
-                        OnEntryTileEntitySerialize::WithDirection(action_in_place, direction) => {
-                            convert_robot_action_in_place_serialize(
+            TileEntitySerialize::OnEntry(game_states, action) => {
+                let activation_direction = match action {
+                    OnEntryTileEntitySerialize::WithDirection(_, direction) => {
+                        Some(direction * value.direction)
+                    }
+
+                    OnEntryTileEntitySerialize::WithoutDirection(_) => None,
+                };
+                TileEntity::OnEntry(
+                    game_states,
+                    value.position,
+                    OnEntryTileEntity {
+                        action: match action {
+                            OnEntryTileEntitySerialize::WithDirection(
+                                action_in_place,
+                                direction,
+                            ) => convert_robot_action_in_place_serialize(
                                 action_in_place,
                                 Some(direction * value.direction),
-                            )
-                        }
+                            ),
 
-                        OnEntryTileEntitySerialize::withoutDirection(action_in_place) => {
-                            convert_robot_action_in_place_serialize(action_in_place, None)
-                        }
+                            OnEntryTileEntitySerialize::WithoutDirection(action_in_place) => {
+                                convert_robot_action_in_place_serialize(action_in_place, None)
+                            }
+                        },
+                        activation_direction,
                     },
-                    activation_direction: match action {
-                        OnEntryTileEntitySerialize::WithDirection(action_in_place, direction) => {
-                            Some(direction * value.direction)
-                        }
-
-                        OnEntryTileEntitySerialize::withoutDirection(_) => None,
-                    },
-                },
-            ),
+                )
+            }
             TileEntitySerialize::Inbounds => TileEntity::Inbounds(value.position),
             TileEntitySerialize::Wall => TileEntity::Wall(value.position, value.direction),
         }
