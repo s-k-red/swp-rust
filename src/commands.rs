@@ -2,6 +2,7 @@ use crate::components::{Board, Robot};
 use crate::datatypes::{Direction, Position};
 use crate::game_states::GameState;
 use crate::scheduled_commands::ScheduledActions;
+use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone)]
 pub enum RobotCommand {
@@ -9,12 +10,12 @@ pub enum RobotCommand {
     DeclareRelativeMove(Direction),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum RobotAction {
     Move(Direction),
     InPlace(RobotActionInPlace),
 }
-#[derive(Debug, PartialEq, Eq, Hash, Clone)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Serialize)]
 pub enum RobotActionInPlace {
     Turn(Direction),
     Repair(i8),
@@ -24,7 +25,7 @@ pub enum RobotActionInPlace {
     ReachCheckpointAndLeaveSafetyCopy(usize),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum TileEntity {
     Direct(Vec<GameState>, Position, RobotAction),
     Indirect(Vec<GameState>, IndirectTileEntity),
@@ -33,12 +34,12 @@ pub enum TileEntity {
     Wall(Position, Direction),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub enum IndirectTileEntity {
     Laser(Position, Direction, i8),
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Serialize)]
 pub struct OnEntryTileEntity {
     pub action: RobotActionInPlace,
     pub activation_direction: Option<Direction>,
