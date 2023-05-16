@@ -1,6 +1,6 @@
 use crate::components::{Board, Robot};
 use crate::datatypes::{Direction, Position};
-use crate::game_states::GameState;
+use crate::game_states::{self, GameState};
 use crate::scheduled_commands::ScheduledActions;
 
 #[derive(Debug, Clone)]
