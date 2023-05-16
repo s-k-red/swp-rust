@@ -6,12 +6,15 @@ use crate::{
     game_states::GameState,
 };
 
+use serde::{Deserialize, Serialize};
+
 pub struct TileSerialize {
     position: Position,
     direction: Direction,
     entity: TileEntitySerialize,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum TileEntitySerialize {
     Direct(Vec<GameState>, RobotActionSerialize),
     Indirect(Vec<GameState>, IndirectTileEntitySerialize),
@@ -20,11 +23,13 @@ pub enum TileEntitySerialize {
     Wall,
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum RobotActionSerialize {
     Move,
     InPlace(RobotActionInPlaceSerialize),
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum RobotActionInPlaceSerialize {
     Turn,
     Repair(i8),
@@ -34,9 +39,12 @@ pub enum RobotActionInPlaceSerialize {
     ReachCheckpointAndLeaveSafetyCopy(usize),
 }
 
+#[derive(Serialize, Deserialize)]
 pub enum IndirectTileEntitySerialize {
     Laser(i8),
 }
+
+#[derive(Serialize, Deserialize)]
 pub enum OnEntryTileEntitySerialize {
     WithDirection(RobotActionInPlaceSerialize, Direction),
     WithoutDirection(RobotActionInPlaceSerialize),
