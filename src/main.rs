@@ -8,9 +8,12 @@ use components::{Card, GameStore};
 use serde_json::{Result, Value};
 
 use crate::{
+    commands::TileEntity,
     datatypes::{Direction, Position},
+    game_states::GameState,
     neural_net::matrix_utils,
-    training::{bot::Bot, trainer::Trainer}, commands::TileEntity, game_states::GameState,
+    serialization::TileEntitySerialize,
+    training::{bot::Bot, trainer::Trainer},
 };
 
 mod automaton;
@@ -32,8 +35,10 @@ fn main() {
 
     //let trainer = Trainer::new();
 
-    let t = TileEntity::Indirect(vec![GameState::FactoryState(1, game_states::FactoryState::Laser)], 
-    commands::IndirectTileEntity::Laser(Position { x: 3, y: 4 }, Direction::new(0), 3));
+    let t = TileEntity::Indirect(
+        vec![GameState::FactoryState(1, game_states::FactoryState::Laser)],
+        commands::IndirectTileEntity::Laser(Position { x: 3, y: 4 }, Direction::new(0), 3),
+    );
 
     let v = serde_json::to_string(&t);
 
@@ -41,6 +46,173 @@ fn main() {
     //println!("{}", t.population.len());
     pause();
     // bot.save_brain();
+    let inbounds = serde_json::to_string(&TileEntitySerialize::Inbounds).unwrap();
+
+    let stadart_belt = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+        ],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+
+    let express_belt = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(0, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(1, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(2, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(3, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(4, game_states::FactoryState::ExpressBelt),
+        ],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+    let standart_left_intersection = serde_json::to_string(&TileEntitySerialize::OnEntry(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+        ],
+        serialization::OnEntryTileEntitySerialize::WithDirection(
+            serialization::RobotActionInPlaceSerialize::Turn,
+            Direction::new(3),
+        ),
+    ))
+    .unwrap();
+    let standart_right_intersection = serde_json::to_string(&TileEntitySerialize::OnEntry(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+        ],
+        serialization::OnEntryTileEntitySerialize::WithDirection(
+            serialization::RobotActionInPlaceSerialize::Turn,
+            Direction::new(1),
+        ),
+    ))
+    .unwrap();
+    let standart_left_intersection = serde_json::to_string(&TileEntitySerialize::OnEntry(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(0, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(1, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(2, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(3, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(4, game_states::FactoryState::ExpressBelt),
+        ],
+        serialization::OnEntryTileEntitySerialize::WithDirection(
+            serialization::RobotActionInPlaceSerialize::Turn,
+            Direction::new(3),
+        ),
+    ))
+    .unwrap();
+    let standart_right_intersection = serde_json::to_string(&TileEntitySerialize::OnEntry(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(1, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(2, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(3, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(4, game_states::FactoryState::StandartBelt),
+            GameState::FactoryState(0, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(1, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(2, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(3, game_states::FactoryState::ExpressBelt),
+            GameState::FactoryState(4, game_states::FactoryState::ExpressBelt),
+        ],
+        serialization::OnEntryTileEntitySerialize::WithDirection(
+            serialization::RobotActionInPlaceSerialize::Turn,
+            Direction::new(1),
+        ),
+    ))
+    .unwrap();
+    let shover_0 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![GameState::FactoryState(
+            0,
+            game_states::FactoryState::Shover,
+        )],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+    let shover_1 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![GameState::FactoryState(
+            1,
+            game_states::FactoryState::Shover,
+        )],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+    let shover_2 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![GameState::FactoryState(
+            2,
+            game_states::FactoryState::Shover,
+        )],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+    let shover_1_3 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(1, game_states::FactoryState::Shover),
+            GameState::FactoryState(3, game_states::FactoryState::Shover),
+        ],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+    let shover_0_2_4 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::Shover),
+            GameState::FactoryState(2, game_states::FactoryState::Shover),
+            GameState::FactoryState(4, game_states::FactoryState::Shover),
+        ],
+        serialization::RobotActionSerialize::Move,
+    ))
+    .unwrap();
+
+    let crusher_2 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![GameState::FactoryState(1, game_states::FactoryState::Press)],
+        serialization::RobotActionSerialize::InPlace(
+            serialization::RobotActionInPlaceSerialize::Destroy,
+        ),
+    ))
+    .unwrap();
+
+    let crusher_1_3 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::Press),
+            GameState::FactoryState(2, game_states::FactoryState::Press),
+        ],
+        serialization::RobotActionSerialize::InPlace(
+            serialization::RobotActionInPlaceSerialize::Destroy,
+        ),
+    ))
+    .unwrap();
+
+    let shover_1_5 = serde_json::to_string(&TileEntitySerialize::Direct(
+        vec![
+            GameState::FactoryState(0, game_states::FactoryState::Press),
+            GameState::FactoryState(4, game_states::FactoryState::Press),
+        ],
+        serialization::RobotActionSerialize::InPlace(
+            serialization::RobotActionInPlaceSerialize::Destroy,
+        ),
+    ))
+    .unwrap();
 }
 
 pub fn start_game(mut game_store: &mut GameStore) {
