@@ -1,4 +1,6 @@
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+use serde::Serialize;
+
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum GameState {
     Start,
     HandOutCards,
@@ -7,7 +9,7 @@ pub enum GameState {
     RoundEnd,
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, PartialEq, Eq, Hash, Serialize)]
 pub enum FactoryState {
     ExpressBelt,
     StandartBelt,

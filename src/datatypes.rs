@@ -2,6 +2,8 @@ use std::{
     fmt::Display,
     ops::{Add, Mul, Sub},
 };
+
+use serde::Serialize;
 pub const ALL_DIRECTIONS: [Direction; 4] = [
     Direction { ordinal: 0 },
     Direction { ordinal: 1 },
@@ -9,7 +11,7 @@ pub const ALL_DIRECTIONS: [Direction; 4] = [
     Direction { ordinal: 3 },
 ];
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 pub struct Direction {
     ordinal: i8,
 }
@@ -47,7 +49,7 @@ impl Display for Direction {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize)]
 pub struct Position {
     pub x: i32,
     pub y: i32,

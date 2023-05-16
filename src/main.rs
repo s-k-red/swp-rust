@@ -5,11 +5,12 @@ use std::{collections::HashMap, io, io::prelude::*};
 
 use automaton::GameAutomaton;
 use components::{Card, GameStore};
+use serde_json::{Result, Value};
 
 use crate::{
     datatypes::{Direction, Position},
     neural_net::matrix_utils,
-    training::{bot::Bot, trainer::Trainer},
+    training::{bot::Bot, trainer::Trainer}, commands::TileEntity, game_states::GameState,
 };
 
 mod automaton;
@@ -30,10 +31,14 @@ fn main() {
     println!("{:?}", direction);
 
     //let trainer = Trainer::new();
-    let t = Trainer::new();
-    //bot.save_brain();
-    // bot.mutate();
-    println!("{}", t.population.len());
+
+    let t = TileEntity::Indirect(vec![GameState::FactoryState(1, game_states::FactoryState::Laser)], 
+    commands::IndirectTileEntity::Laser(Position { x: 3, y: 4 }, Direction::new(0), 3));
+
+    let v = serde_json::to_string(&t);
+
+    println!("{}", v.ok().unwrap());
+    //println!("{}", t.population.len());
     pause();
     // bot.save_brain();
 }

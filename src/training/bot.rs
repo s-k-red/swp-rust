@@ -49,14 +49,14 @@ impl Bot {
             .find_or_first(|r| r.user_name.eq(&self.id))
             .unwrap();
 
-        match &game_store.winners {
-            Some(winners) => {
-                if winners.contains(&robot.user_name) {
-                    fitness += 1.0;
-                }
-            }
-            None => todo!(),
-        }
+        // match &game_store.winners {
+        //     Some(winners) => {
+        //         if winners.contains(&robot.user_name) {
+        //             fitness += 1.0;
+        //         }
+        //     }
+        //     None => todo!(),
+        // } //TODODODODOD
 
         fitness += robot.greatest_checkpoint_reached as f64 / 6.0; //TODO!!!!! change to max num of checkpoints
 
