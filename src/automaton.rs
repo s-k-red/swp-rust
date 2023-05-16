@@ -13,24 +13,29 @@ pub struct GameAutomaton {
 }
 
 impl GameAutomaton {
-    pub fn hand_out_cards(game_store: &mut GameStore) {
+    pub fn hand_out_cards(game_store: &mut GameStore) -> Option<Vec<String>> {
         GameState::HandOutCards.on_entry(
             &mut game_store.robots,
             &game_store.card_deck,
             &game_store.board,
             &mut game_store.players,
+            game_store.highest_checkpoint,
         )
     }
 
-    pub fn round_trip(&self, game_store: &mut GameStore) {
+    pub fn round_trip(&self, game_store: &mut GameStore) -> Option<Vec<String>> {
         for game_state in &self.state_transitions {
-            game_state.on_entry(
+            if let Some(winners) = game_state.on_entry(
                 &mut game_store.robots,
                 &game_store.card_deck,
                 &game_store.board,
                 &mut game_store.players,
-            )
+                game_store.highest_checkpoint,
+            ) {
+                return Some(winners);
+            }
         }
+        None
     }
 }
 
@@ -41,7 +46,8 @@ trait StateAction {
         card_deck: &[Card],
         board: &Board,
         players: &mut [Player],
-    );
+        highest_checkpoint: usize,
+    ) -> Option<Vec<String>>;
 }
 
 impl StateAction for GameState {
@@ -51,9 +57,10 @@ impl StateAction for GameState {
         card_deck: &[Card],
         board: &Board,
         players: &mut [Player],
-    ) {
+        highest_checkpoint: usize,
+    ) -> Option<Vec<String>> {
         match &self {
-            GameState::Start => (),
+            GameState::Start => None,
             GameState::HandOutCards => {
                 let mut cards = card_deck.to_vec();
                 cards.shuffle(&mut thread_rng());
@@ -77,6 +84,7 @@ impl StateAction for GameState {
                     }
                     player.cards_in_hand = cards.drain(0..(robot.hp - 1) as usize).collect();
                 }
+                None
             }
             GameState::ExecuteCard(register_number) => {
                 let mut cards = players
@@ -109,8 +117,12 @@ impl StateAction for GameState {
                         for robot_action in robot_actions {
                             execute(robot_action);
                         }
+                        if let Some(winners) = calulate_winers(robots, highest_checkpoint) {
+                            return Some(winners);
+                        }
                     }
                 }
+                None
             }
             GameState::FactoryState(_, _) => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
@@ -119,6 +131,7 @@ impl StateAction for GameState {
                 for robot_action in robot_actions {
                     execute(robot_action);
                 }
+                calulate_winers(robots, highest_checkpoint)
             }
             GameState::RoundEnd => {
                 let robot_actions = calculate_actions_from_tile_entities(self, robots, board);
@@ -131,11 +144,21 @@ impl StateAction for GameState {
                     .filter(|robot| robot.alive)
                     .map(|robot| robot.position)
                     .collect::<Vec<_>>();
-                robots
+                for robot in robots
                     .iter_mut()
                     .filter(|robot| !robot.alive && robot.safety_copy_amount > 0)
                     .sorted_by_key(|robot| robot.safety_copy_number)
-                    .for_each(|robot| robot.respawn(board, &mut occupied));
+                {
+                    if let Some(winners) = robot.respawn(
+                        board,
+                        &mut occupied,
+                        GameState::RoundEnd,
+                        highest_checkpoint,
+                    ) {
+                        return Some(vec![winners]);
+                    }
+                }
+                None
             }
         }
     }
@@ -174,4 +197,44 @@ fn calculate_actions_from_tile_entities<'a>(
     }
 
     actions
+}
+
+pub fn calulate_winers(robots: &[Robot], highest_checkpoint: usize) -> Option<Vec<String>> {
+    let winners = robots
+        .iter()
+        .filter(|robot| robot.greatest_checkpoint_reached == highest_checkpoint)
+        .map(|robot| robot.user_name.clone())
+        .collect::<Vec<_>>();
+    if !winners.is_empty() {
+        Some(winners)
+    } else if robots
+        .iter()
+        .all(|robot| !robot.alive && robot.safety_copy_amount == 0)
+    {
+        //nobody wins, tmp solution:
+        Some(vec![])
+    } else {
+        None
+    }
+    /*
+    //winning by last one standing:
+    else if self.robots.iter().filter(|r|r.alive).count() == 1{
+        Some(vec![self.robots.iter().find(|r|r.alive).unwrap().user_name.clone()])
+    }
+    //winning by other means than reaching the last checkpoint bad if training with only one robot, as it promotes suicide
+    else if self.robots.iter().all(|robot| !robot.alive && robot.safety_copy_amount == 0) {
+       Some(
+           self.robots
+               .iter()
+               .max_set_by(|robot, other_robot| {
+                   robot
+                       .greatest_checkpoint_reached
+                       .cmp(&other_robot.greatest_checkpoint_reached)
+               })
+               .iter()
+               .map(|robot| robot.user_name.clone())
+               .collect::<Vec<_>>(),
+       )
+    }
+     */
 }

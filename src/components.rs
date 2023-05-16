@@ -40,7 +40,6 @@ pub struct GameStore {
     pub players: Vec<Player>,
     pub board: Board,
     pub card_deck: Vec<Card>,
-    pub winners: Option<Vec<String>>,
     pub highest_checkpoint: usize,
     //    pub robot_settings: RobotSettings,
 }
@@ -187,7 +186,13 @@ fn insert_help<T: Clone>(
 }
 
 impl Robot {
-    pub fn respawn(&mut self, board: &Board, occupied: &mut Vec<Position>) {
+    pub fn respawn(
+        &mut self,
+        board: &Board,
+        occupied: &mut Vec<Position>,
+        game_state: GameState,
+        winning_checkpoint: usize,
+    ) -> Option<String> {
         self.deaths += 1;
         let mut possible_respawn_pos = vec![self.safety_copy_position];
         let mut visited = vec![];
@@ -221,6 +226,22 @@ impl Robot {
         self.hp = MAX_HP;
         self.safety_copy_amount -= 1;
         occupied.push(*respawn_pos);
+        let respawn_actions = board
+            .on_entry_tile_eintities
+            .get(&game_state)?
+            .get(respawn_pos)?
+            .iter()
+            .filter(|entity| entity.activation_direction.is_none())
+            .map(|entity| entity.action.clone())
+            .collect::<Vec<_>>();
+        for respawn_action in respawn_actions {
+            respawn_action.action(self);
+        }
+        if self.greatest_checkpoint_reached == winning_checkpoint {
+            Some(self.user_name.clone())
+        } else {
+            None
+        }
     }
 
     pub fn new(user_name: String, position: Position) -> Self {
@@ -236,35 +257,6 @@ impl Robot {
             hp: MAX_HP,
             deaths: 0,
         }
-    }
-}
-
-impl GameStore {
-    pub fn calulate_winers(&mut self) {
-        let winners = self
-            .robots
-            .iter()
-            .filter(|robot| robot.greatest_checkpoint_reached == self.highest_checkpoint)
-            .map(|robot| robot.user_name.clone())
-            .collect::<Vec<_>>();
-        if !winners.is_empty() {
-            self.winners = Some(winners)
-        }
-        //
-        //else if self.robots.iter().all(|robot| !robot.alive) {
-        //    self.winners = Some(
-        //        self.robots
-        //            .iter()
-        //            .max_set_by(|robot, other_robot| {
-        //                robot
-        //                    .greatest_checkpoint_reached
-        //                    .cmp(&other_robot.greatest_checkpoint_reached)
-        //            })
-        //            .iter()
-        //            .map(|robot| robot.user_name.clone())
-        //            .collect::<Vec<_>>(),
-        //    )
-        //}
     }
 }
 

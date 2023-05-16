@@ -22,7 +22,6 @@ pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameSt
                 players: vec![Player::new(id.clone())],
                 board: Board::new(Vec::new()),
                 card_deck: Vec::new(),
-                winners: None,
                 highest_checkpoint: 6,
             },
         )); //TODO change
