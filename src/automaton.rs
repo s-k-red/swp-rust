@@ -1,3 +1,5 @@
+use std::vec;
+
 use crate::{
     components::{Board, Card, GameStore, Player, Robot},
     game_states::GameState,
@@ -62,7 +64,25 @@ impl StateAction for GameState {
         match &self {
             GameState::Start => None,
             GameState::HandOutCards => {
-                let mut cards = card_deck.to_vec();
+                let locked_cards = players
+                    .iter()
+                    .flat_map(|player| {
+                        let locked = (robots
+                            .iter()
+                            .find(|robot| robot.user_name == player.user_name)
+                            .filter(|robot| robot.alive && robot.hp > 0)?
+                            .hp
+                            - 1) as usize;
+                        Some(&(player.cards_in_hand)[locked..9])
+                    })
+                    .flatten()
+                    .collect::<Vec<&Card>>();
+                let mut cards = card_deck
+                    .iter()
+                    .filter(|card| !locked_cards.contains(card))
+                    .cloned()
+                    .collect::<Vec<Card>>();
+
                 cards.shuffle(&mut thread_rng());
                 for player in players {
                     let robot = robots
