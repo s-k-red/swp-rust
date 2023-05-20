@@ -36,17 +36,11 @@ fn cancel_with_check<'a>(
 
     for (a, b) in (0..robot_moves.len()).tuple_combinations() {
         let tuple_represents_collision = {
-            let action_pos_tuple_a = &robot_moves.get(a).unwrap().1;
-            let action_pos_tuple_b = &robot_moves.get(b).unwrap().1;
+            let action_a = &robot_moves.get(a).unwrap().1;
+            let action_b = &robot_moves.get(b).unwrap().1;
             collision_test(
-                (
-                    action_pos_tuple_a.robot.position,
-                    action_pos_tuple_a.simulate(),
-                ),
-                (
-                    action_pos_tuple_b.robot.position,
-                    action_pos_tuple_b.simulate(),
-                ),
+                (action_a.robot.position, action_a.simulate()),
+                (action_b.robot.position, action_b.simulate()),
                 board,
             )
         };
