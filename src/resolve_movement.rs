@@ -29,11 +29,15 @@ fn cancel_with_check<'a>(
     collision_test: fn((Position, Position), (Position, Position), &Board) -> bool,
 ) -> (Vec<ScheduledMove<'a>>, bool) {
     let mut any_cancelled = false;
+    let mut robot_moves = robot_moves
+        .into_iter()
+        .map(|scheduled_move| (false, scheduled_move))
+        .collect::<Vec<_>>();
 
     for (a, b) in (0..robot_moves.len()).tuple_combinations() {
         let tuple_represents_collision = {
-            let action_pos_tuple_a = robot_moves.get(a).unwrap();
-            let action_pos_tuple_b = robot_moves.get(b).unwrap();
+            let action_pos_tuple_a = &robot_moves.get(a).unwrap().1;
+            let action_pos_tuple_b = &robot_moves.get(b).unwrap().1;
             collision_test(
                 (
                     action_pos_tuple_a.robot.position,
@@ -47,13 +51,25 @@ fn cancel_with_check<'a>(
             )
         };
         if tuple_represents_collision {
-            any_cancelled = true;
-
-            robot_moves.get_mut(a).unwrap().mov = None;
-            robot_moves.get_mut(b).unwrap().mov = None;
+            robot_moves.get_mut(a).unwrap().0 = true;
+            robot_moves.get_mut(b).unwrap().0 = true;
         }
     }
-    (robot_moves, any_cancelled)
+    (
+        robot_moves
+            .into_iter()
+            .map(|(cancelled, mut scheduled_move)| {
+                match cancelled {
+                    true => {
+                        scheduled_move.mov = None;
+                    }
+                    false => (),
+                }
+                scheduled_move
+            })
+            .collect::<Vec<_>>(),
+        any_cancelled,
+    )
 }
 
 fn test_oppoosing(
