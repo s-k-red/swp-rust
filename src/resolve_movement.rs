@@ -51,6 +51,7 @@ fn cancel_with_check<'a>(
             )
         };
         if tuple_represents_collision {
+            any_cancelled = true;
             robot_moves.get_mut(a).unwrap().0 = true;
             robot_moves.get_mut(b).unwrap().0 = true;
         }
