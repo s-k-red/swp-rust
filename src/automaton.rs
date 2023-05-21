@@ -70,10 +70,10 @@ impl StateAction for GameState {
                         let locked = (robots
                             .iter()
                             .find(|robot| robot.user_name == player.user_name)
-                            .filter(|robot| robot.alive && robot.hp > 0)?
+                            .filter(|robot| robot.alive && robot.hp > 0 && robot.hp < 6)?
                             .hp
                             - 1) as usize;
-                        Some(&(player.cards_in_hand)[locked..9])
+                        Some(&(player.cards_played)[locked..4])
                     })
                     .flatten()
                     .collect::<Vec<&Card>>();
