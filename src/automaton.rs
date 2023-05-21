@@ -73,7 +73,7 @@ impl StateAction for GameState {
                             .filter(|robot| robot.alive && robot.hp > 0 && robot.hp < 6)?
                             .hp
                             - 1) as usize;
-                        Some(&(player.cards_played)[locked..4])
+                        Some(&(player.cards_played)[locked..5])
                     })
                     .flatten()
                     .collect::<Vec<&Card>>();
