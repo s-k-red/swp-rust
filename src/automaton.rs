@@ -102,7 +102,7 @@ impl StateAction for GameState {
                         }
                         cards.shuffle(&mut thread_rng());
                     }
-                    player.cards_in_hand = cards.drain(0..(robot.hp - 1) as usize).collect();
+                    player.cards_in_hand = cards.drain(0..(robot.hp as usize)).collect();
                 }
                 None
             }
