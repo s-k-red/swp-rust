@@ -3,8 +3,10 @@ use std::hash::Hash;
 
 use itertools::Itertools;
 
+use crate::automaton::AUTOMATON_STATES;
 use crate::commands::{
-    IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotCommand, TileEntity,
+    IndirectTileEntity, OnEntryTileEntity, RobotAction, RobotActionInPlace, RobotCommand,
+    TileEntity,
 };
 use crate::datatypes::{Direction, Position, ALL_DIRECTIONS};
 use crate::game_states::GameState;
@@ -155,6 +157,24 @@ impl Board {
             direct_tile_eintities,
             indirect_tile_eintities,
             on_entry_tile_eintities,
+        }
+    }
+
+    pub fn add_checkpoints(&mut self, checkpoint_pos: Vec<Position>) {
+        for (checkpoint_number, pos) in checkpoint_pos.into_iter().enumerate() {
+            let temporary = std::mem::take(&mut self.on_entry_tile_eintities);
+
+            self.on_entry_tile_eintities = insert_help(
+                AUTOMATON_STATES.to_vec(),
+                pos,
+                OnEntryTileEntity {
+                    action: RobotActionInPlace::ReachCheckpointAndLeaveSafetyCopy(
+                        checkpoint_number,
+                    ),
+                    activation_direction: None,
+                },
+                temporary,
+            );
         }
     }
 }
