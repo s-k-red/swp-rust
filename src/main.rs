@@ -3,13 +3,15 @@ extern crate derive_builder;
 
 use std::{collections::HashMap, io, io::prelude::*};
 
-use automaton::GameAutomaton;
+use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};
 use serde_json::{Result, Value};
 use serialization_utils::load;
 
 use crate::{
+    automaton::AUTOMATON_STATES,
     commands::TileEntity,
+    components::Board,
     datatypes::{Direction, Position},
     game_states::GameState,
     neural_net::matrix_utils,
@@ -27,21 +29,23 @@ mod neural_net;
 mod resolve_movement;
 pub mod scheduled_commands;
 mod serialization;
+mod serialization_utils;
 pub mod setup;
 mod training;
-mod serialization_utils;
 fn main() {
-    load();
+    dbg!("{}", AUTOMATON_STATES);
+    let map = load();
+    let board = Board::new(map);
+    dbg!("{}", board);
 }
-
 pub fn start_game(mut game_store: &mut GameStore) {
-    GameAutomaton::hand_out_cards(game_store);
+    GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(game_store);
 }
 
-pub fn run_game(
+pub fn run_game<const N: usize>(
     cards_played: HashMap<String, Vec<Card>>,
     mut game_store: GameStore,
-    game_automaton: GameAutomaton,
+    game_automaton: GameAutomaton<{ N }>,
 ) -> GameStore {
     game_store.players = game_store
         .players
@@ -65,7 +69,7 @@ pub fn run_game(
         })
         .collect::<Vec<_>>();
     game_automaton.round_trip(&mut game_store);
-    GameAutomaton::hand_out_cards(&mut game_store);
+    GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(&mut game_store);
     game_store
 }
 

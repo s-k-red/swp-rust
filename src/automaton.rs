@@ -1,8 +1,8 @@
-use std::vec;
+use std::{default, vec};
 
 use crate::{
     components::{Board, Card, GameStore, Player, Robot},
-    game_states::GameState,
+    game_states::{FactoryState, GameState},
     resolve_movement::{resolve_card_movement, resolve_factory_movement},
     scheduled_commands::{execute, execute_non_moves, ScheduledActions},
 };
@@ -10,11 +10,47 @@ use itertools::Itertools;
 use rand::seq::SliceRandom;
 use rand::thread_rng;
 
-pub struct GameAutomaton {
-    state_transitions: Vec<GameState>, //without HandOutCards
+pub const AUTOMATON_SIZE: usize = 36;
+pub const AUTOMATON_STATES: [GameState; AUTOMATON_SIZE] = build_automaton_states();
+
+const fn build_automaton_states() -> [GameState; AUTOMATON_SIZE] {
+    let mut ret = [GameState::Start; AUTOMATON_SIZE];
+    let mut i = 0;
+    while i < 5 {
+        ret[i * 7] = GameState::ExecuteCard(i);
+        let mut j = 0;
+        while j < 6 {
+            ret[i * 7 + j + 1] = GameState::FactoryState(
+                i,
+                match j {
+                    0 => FactoryState::ExpressBelt,
+                    1 => FactoryState::StandartBelt,
+                    2 => FactoryState::Shover,
+                    3 => FactoryState::SpinField,
+                    4 => FactoryState::Press,
+                    5 => FactoryState::Laser,
+                    _ => unreachable!(),
+                },
+            );
+            j += 1;
+        }
+        i += 1;
+    }
+    ret[35] = GameState::RoundEnd;
+    ret
 }
 
-impl GameAutomaton {
+pub struct GameAutomaton<const N: usize> {
+    state_transitions: [GameState; N], //without HandOutCards
+}
+impl Default for GameAutomaton<AUTOMATON_SIZE> {
+    fn default() -> Self {
+        Self {
+            state_transitions: AUTOMATON_STATES,
+        }
+    }
+}
+impl<const N: usize> GameAutomaton<N> {
     pub fn hand_out_cards(game_store: &mut GameStore) -> Option<Vec<String>> {
         GameState::HandOutCards.on_entry(
             &mut game_store.robots,
