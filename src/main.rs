@@ -6,7 +6,9 @@ use std::{collections::HashMap, io, io::prelude::*};
 use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};
 
+use futures::executor::block_on;
 use serialization_utils::load;
+use training::trainer::Trainer;
 
 use crate::components::Board;
 
@@ -24,9 +26,9 @@ mod serialization_utils;
 pub mod setup;
 mod training;
 fn main() {
-    let map = load();
-    let board = Board::new(map);
-    dbg!("{}", board);
+    let mut trainer = Trainer::new();
+
+    block_on(trainer.start_training());
 }
 pub fn start_game(mut game_store: &mut GameStore) {
     GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(game_store);

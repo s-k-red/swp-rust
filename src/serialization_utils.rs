@@ -9,18 +9,17 @@ use std::fs;
 
 pub fn load() -> Vec<TileEntity> {
     let mut content = fs::read_to_string(String::from(
-        "E:\\Sebastian\\Rust\\swp_logic\\src\\tiles.json",
+        "src\\tiles.json",
     ))
     .unwrap();
     let tileset: Tileset = serde_json::from_str(content.as_str()).unwrap();
 
-    content = fs::read_to_string("E:\\Sebastian\\Rust\\swp_logic\\src\\CanneryRow.json").unwrap();
+    content = fs::read_to_string("src\\CanneryRow.json").unwrap();
     let raw_map: SourceMap = serde_json::from_str(content.as_str()).unwrap();
 
     let mut map: Vec<TileEntity> = Vec::new();
 
     for i in raw_map.layers.iter().enumerate() {
-        println!("layer {}, data len: {}", i.0, i.1.data.len());
         map.append(&mut parse(&i.1.data, &tileset));
     }
 
@@ -32,7 +31,6 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
 
     for x in 0..12 {
         for y in 0..12 {
-            println!("x: {}, y: {}", x, y);
             let mut gl_tile_id = data[(11 - y) * 12 + x];
 
             let fh = (gl_tile_id & 0x80000000) > 0;

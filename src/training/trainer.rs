@@ -7,7 +7,7 @@ use std::collections::HashMap;
 use futures::future::join_all;
 use itertools::Itertools;
 
-use crate::{training::genetic_alg_utils, config::{GENERATIONS, PUPULATION_SIZE}, run_game, start_game, components::GameStore, setup, datatypes::Position, automaton::{self, GameAutomaton, AUTOMATON}};
+use crate::{training::genetic_alg_utils, config::{GENERATIONS, PUPULATION_SIZE}, run_game, start_game, components::GameStore, setup, datatypes::Position, automaton::{self, GameAutomaton, AUTOMATON}, serialization_utils::load};
 
 use super::bot::Bot;
 
@@ -25,7 +25,7 @@ impl Trainer {
             print!("generating bot {} of {}..", i, PUPULATION_SIZE);
             let bot = Bot::new_random();
             println!("done!");
-            let gs = setup::convert(Vec::new(), vec![bot.id.clone()], Vec::new(), Position{x: 3, y: 4});
+            let gs = setup::convert(load(), vec![bot.id.clone()], Vec::new(), Position{x: 3, y: 4});
 
             pop.push((bot, gs));
         }
@@ -53,10 +53,12 @@ impl Trainer {
     }
 
     async fn play_bot(bot: &mut Bot, store: &mut GameStore) -> Result<bool, ()>{
+        println!("Start game for {}", bot.id);
         start_game(store);
         let mut won = false;
 
         while !won {
+            println!("Play round for {}", bot.id);
             let mut played_cards = HashMap::new();
             played_cards.insert(bot.id.clone(), bot.play_cards(store));
             won = run_game(played_cards, store.clone(), AUTOMATON).1.is_some()
