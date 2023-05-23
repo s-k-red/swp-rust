@@ -38,7 +38,6 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
             let fh = (gl_tile_id & 0x80000000) > 0;
             let fv = (gl_tile_id & 0x40000000) > 0;
             let fd = (gl_tile_id & 0x20000000) > 0;
-            let rotated_hex120 = (gl_tile_id & 0x10000000) > 0;
 
             gl_tile_id &= !(0x80000000 | 0x40000000 | 0x20000000 | 0x10000000);
 
