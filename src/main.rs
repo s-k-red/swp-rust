@@ -7,7 +7,7 @@ use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};
 
 use futures::executor::block_on;
-use serialization_utils::load;
+
 use training::trainer::Trainer;
 
 use crate::components::Board;
@@ -25,12 +25,13 @@ mod serialization;
 mod serialization_utils;
 pub mod setup;
 mod training;
+mod card_factory;
 fn main() {
     let mut trainer = Trainer::new();
 
     block_on(trainer.start_training());
 }
-pub fn start_game(mut game_store: &mut GameStore) {
+pub fn start_game(game_store: &mut GameStore) {
     GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(game_store);
 }
 

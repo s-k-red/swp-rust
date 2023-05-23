@@ -79,9 +79,15 @@ impl Bot {
         let me = gs.players.iter().find(|p| p.user_name.eq(&self.id)).unwrap();
         let mut cards = me.cards_in_hand.clone();
         let legal_amount = std::cmp::min(5, cards.len());
-        let mut played_cards = Vec::new();
-
-        for i in 0..legal_amount {
+        let mut played_cards: Vec<Card> = Vec::new();
+        
+        if legal_amount > 0 {
+            let first_card = cards.iter().position(|c| c.is_movement).unwrap();
+            played_cards.push(cards[first_card].clone());
+            cards.remove(first_card);
+        }
+        
+        for i in 1..legal_amount {
             played_cards.push(cards.first().unwrap().clone());
             cards.remove(0);
         }

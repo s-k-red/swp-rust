@@ -2,12 +2,12 @@
 #![allow(unused_variables)]
 
 
-use std::collections::HashMap;
+use std::{collections::HashMap, thread, time::Duration};
 
 use futures::future::join_all;
 use itertools::Itertools;
 
-use crate::{training::genetic_alg_utils, config::{GENERATIONS, PUPULATION_SIZE}, run_game, start_game, components::GameStore, setup, datatypes::Position, automaton::{self, GameAutomaton, AUTOMATON}, serialization_utils::load};
+use crate::{training::genetic_alg_utils, config::{GENERATIONS, PUPULATION_SIZE}, run_game, start_game, components::GameStore, setup, datatypes::Position, automaton::{self, GameAutomaton, AUTOMATON}, serialization_utils::load, card_factory::create_card_deck};
 
 use super::bot::Bot;
 
@@ -25,7 +25,8 @@ impl Trainer {
             print!("generating bot {} of {}..", i, PUPULATION_SIZE);
             let bot = Bot::new_random();
             println!("done!");
-            let gs = setup::convert(load(), vec![bot.id.clone()], Vec::new(), Position{x: 3, y: 4});
+            let mut gs = setup::convert(load(), vec![bot.id.clone()], create_card_deck(), Position{x: 5, y: 7});
+            gs.board.add_checkpoints(vec![Position{x:5, y:7}, Position{x:7, y:8}]);
 
             pop.push((bot, gs));
         }
@@ -61,7 +62,11 @@ impl Trainer {
             println!("Play round for {}", bot.id);
             let mut played_cards = HashMap::new();
             played_cards.insert(bot.id.clone(), bot.play_cards(store));
-            won = run_game(played_cards, store.clone(), AUTOMATON).1.is_some()
+            let res = run_game(played_cards, store.clone(), AUTOMATON);
+            won = res.1.is_some();
+            let me = res.0.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
+            println!("Round done for {} at pos x: {}, y: {}", bot.id, me.position.x, me.position.y);
+            thread::sleep(Duration::from_millis(1000));
         }
         
         todo!("start & play game until the end async");
