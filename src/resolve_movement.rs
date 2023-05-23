@@ -24,7 +24,7 @@ pub fn resolve_factory_movement<'a>(
 }
 
 fn cancel_with_check<'a>(
-    mut robot_moves: Vec<ScheduledMove<'a>>,
+    robot_moves: Vec<ScheduledMove<'a>>,
     board: &'a Board,
     collision_test: fn((Position, Position), (Position, Position), &Board) -> bool,
 ) -> (Vec<ScheduledMove<'a>>, bool) {

@@ -10,56 +10,29 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Deserialize)]
 pub struct SourceLayer {
-    pub data: Vec<usize>
+    pub data: Vec<usize>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct SourceMap {
-    pub layers: Vec<SourceLayer>
+    pub layers: Vec<SourceLayer>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct Tileset {
-    pub tiles: Vec<TilesetTile>
+    pub tiles: Vec<TilesetTile>,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct TilesetTile {
     pub properties: Vec<TilesetTileProperty>,
-    pub id: u32
+    pub id: u32,
 }
 
 #[derive(Serialize, Deserialize)]
 pub struct TilesetTileProperty {
-    pub value: Vec<TileEntitySerialize>
+    pub value: Vec<TileEntitySerialize>,
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 pub struct TileSerialize {
     pub position: Position,

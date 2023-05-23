@@ -12,7 +12,7 @@ pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameSt
 
     calc_fitness(last_gen);
     for _bot in 0..last_gen.len() {
-        let mut b = pick_bot(&last_gen).clone(); //crossover in the future?
+        let mut b = pick_bot(last_gen).clone(); //crossover in the future?
         let id = b.id.clone();
         b.mutate();
         new_gen.push((
