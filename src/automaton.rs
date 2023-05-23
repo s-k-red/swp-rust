@@ -1,4 +1,4 @@
-use std::{default, vec};
+use std::vec;
 
 use crate::{
     components::{Board, Card, GameStore, Player, Robot},

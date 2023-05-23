@@ -41,7 +41,7 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
 
             gl_tile_id &= !(0x80000000 | 0x40000000 | 0x20000000 | 0x10000000);
 
-            if (gl_tile_id == 0) {
+            if gl_tile_id == 0 {
                 continue;
             }
 
