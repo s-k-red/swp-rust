@@ -2,7 +2,7 @@
 #![allow(unused_variables)]
 
 use crate::{
-    components::{GameStore, MAX_HP},
+    components::{GameStore, MAX_HP, Card},
     config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES},
     neural_net::NeuralNet,
 };
@@ -75,7 +75,21 @@ impl Bot {
         self.brain.save();
     }
 
-    pub fn play_card(&self, input: Vec<f64>) -> usize{
+    pub fn play_cards(&self, gs: &GameStore) -> Vec<Card> {
+        let me = gs.players.iter().find(|p| p.user_name.eq(&self.id)).unwrap();
+        let mut cards = me.cards_in_hand.clone();
+        let legal_amount = std::cmp::min(5, cards.len());
+        let mut played_cards = Vec::new();
+
+        for i in 0..legal_amount {
+            played_cards.push(cards.first().unwrap().clone());
+            cards.remove(0);
+        }
+
+        played_cards
+    }
+
+    fn play_card(&self, input: Vec<f64>) -> usize{
         self.brain.guess(input).iter()
         .enumerate()
         .max_by(|(_, a), (_, b)| a.total_cmp(b))

@@ -36,7 +36,7 @@ pub fn run_game<const N: usize>(
     cards_played: HashMap<String, Vec<Card>>,
     mut game_store: GameStore,
     game_automaton: GameAutomaton<{ N }>,
-) -> GameStore {
+) -> (GameStore, Option<Vec<String>>) {
     game_store.players = game_store
         .players
         .into_iter()
@@ -58,9 +58,9 @@ pub fn run_game<const N: usize>(
             None => player,
         })
         .collect::<Vec<_>>();
-    game_automaton.round_trip(&mut game_store);
+    let winners = game_automaton.round_trip(&mut game_store);
     GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(&mut game_store);
-    game_store
+    (game_store, winners)
 }
 
 fn pause() {

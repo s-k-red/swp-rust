@@ -12,6 +12,7 @@ use rand::thread_rng;
 
 pub const AUTOMATON_SIZE: usize = 36;
 pub const AUTOMATON_STATES: [GameState; AUTOMATON_SIZE] = build_automaton_states();
+pub const AUTOMATON: GameAutomaton<AUTOMATON_SIZE> = GameAutomaton::<AUTOMATON_SIZE>{state_transitions: AUTOMATON_STATES};
 
 const fn build_automaton_states() -> [GameState; AUTOMATON_SIZE] {
     let mut ret = [GameState::Start; AUTOMATON_SIZE];

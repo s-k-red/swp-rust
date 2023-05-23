@@ -11,4 +11,4 @@ pub const OUTPUT_NODES: usize = 9;
 pub const HIDDEN_LAYERS: usize = 1;
 pub const MUTATION_RATE: f64 = 0.1; //10%
 pub const GENERATIONS: usize = 30;
-pub const PUPULATION_SIZE: i32 = 30;
+pub const PUPULATION_SIZE: i32 = 1;
