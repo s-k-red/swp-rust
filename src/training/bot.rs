@@ -76,6 +76,13 @@ impl Bot {
     pub fn save_brain(&self) {
         self.brain.save();
     }
+
+    pub fn play_card(&self, input: Vec<f64>) -> usize{
+        self.brain.guess(input).iter()
+        .enumerate()
+        .max_by(|(_, a), (_, b)| a.total_cmp(b))
+        .map(|(index, _)| index).unwrap()
+    }
 }
 
 impl Eq for Bot {}
