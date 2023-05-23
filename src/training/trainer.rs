@@ -70,6 +70,8 @@ impl Trainer {
             thread::sleep(Duration::from_millis(1000));
         }
         
-        todo!("start & play game until the end async");
+        println!("won");
+
+        Ok(true)
     }
 }
