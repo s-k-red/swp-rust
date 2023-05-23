@@ -5,19 +5,10 @@ use std::{collections::HashMap, io, io::prelude::*};
 
 use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};
-use serde_json::{Result, Value};
+
 use serialization_utils::load;
 
-use crate::{
-    automaton::AUTOMATON_STATES,
-    commands::TileEntity,
-    components::Board,
-    datatypes::{Direction, Position},
-    game_states::GameState,
-    neural_net::matrix_utils,
-    serialization::TileEntitySerialize,
-    training::{bot::Bot, trainer::Trainer},
-};
+use crate::components::Board;
 
 mod automaton;
 pub mod commands;
@@ -33,7 +24,6 @@ mod serialization_utils;
 pub mod setup;
 mod training;
 fn main() {
-    dbg!("{}", AUTOMATON_STATES);
     let map = load();
     let board = Board::new(map);
     dbg!("{}", board);

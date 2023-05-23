@@ -1,8 +1,3 @@
-use serde_json::Result;
-use std::env;
-use std::fs;
-use std::os::raw;
-
 use crate::commands::TileEntity;
 use crate::datatypes::Direction;
 use crate::datatypes::Position;
@@ -10,8 +5,7 @@ use crate::serialization::SourceMap;
 use crate::serialization::TileEntitySerialize;
 use crate::serialization::TileSerialize;
 use crate::serialization::Tileset;
-use crate::serialization::TilesetTile;
-use crate::serialization::TilesetTileProperty;
+use std::fs;
 
 pub fn load() -> Vec<TileEntity> {
     let mut content = fs::read_to_string(String::from(
@@ -39,7 +33,7 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
     for x in 0..12 {
         for y in 0..12 {
             println!("x: {}, y: {}", x, y);
-            let mut gl_tile_id = data[y * 12 + 11 - x];
+            let mut gl_tile_id = data[(11 - y) * 12 + x];
 
             let fh = (gl_tile_id & 0x80000000) > 0;
             let fv = (gl_tile_id & 0x40000000) > 0;
@@ -88,13 +82,13 @@ fn resolve_orientation(fh: bool, fv: bool, fd: bool, iswall: bool) -> i8 {
         walloffset += 2;
     }
 
-    if (fh && fv) {
+    if fh && fv {
         return (2 + walloffset) % 4;
     }
-    if (fh && fd) {
+    if fh && fd {
         return (1 + walloffset) % 4;
     }
-    if (fv && fd) {
+    if fv && fd {
         return (3 + walloffset) % 4;
     }
 

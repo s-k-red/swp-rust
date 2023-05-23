@@ -2,10 +2,8 @@
 #![allow(unused_variables)]
 
 use crate::{
-    components::{Board, GameStore, Player, Robot, MAX_HP},
+    components::{GameStore, MAX_HP},
     config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES},
-    datatypes::Position,
-    game_states::GameState,
     neural_net::NeuralNet,
 };
 use itertools::Itertools;
@@ -33,7 +31,7 @@ impl Bot {
     pub fn new(brain: NeuralNet) -> Bot {
         let id = Uuid::new_v4().to_string();
         Bot {
-            id: id.clone(),
+            id,
             brain,
             normalized_fitness: 0.0,
             own_fitness: 0.0,
@@ -64,9 +62,9 @@ impl Bot {
 
         fitness -= robot.hp as f64 / MAX_HP as f64;
 
-        self.own_fitness = fitness.clone();
+        self.own_fitness = fitness;
 
-        return fitness;
+        fitness
     }
 
     pub fn mutate(&mut self) {
