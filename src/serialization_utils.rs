@@ -49,13 +49,13 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity>{
                 0x10000000);
 
             if(gl_tile_id == 0) {
-                return vec![];
+                continue;
             }
 
             gl_tile_id -= 1;
 
             if tileset.tiles[gl_tile_id].properties.is_empty() {
-                return vec![];
+                continue;
             }
 
             for prop in tileset.tiles[gl_tile_id].properties[0].value.iter() {
