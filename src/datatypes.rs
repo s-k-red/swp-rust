@@ -13,7 +13,7 @@ pub const ALL_DIRECTIONS: [Direction; 4] = [
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq, Hash, Serialize, Deserialize)]
 pub struct Direction {
-    ordinal: i8,
+    pub ordinal: i8,
 }
 
 impl Direction {

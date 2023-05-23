@@ -8,13 +8,66 @@ use crate::{
 
 use serde::{Deserialize, Serialize};
 
-pub struct TileSerialize {
-    position: Position,
-    direction: Direction,
-    entity: TileEntitySerialize,
+#[derive(Serialize, Deserialize)]
+pub struct SourceLayer {
+    pub data: Vec<usize>
 }
 
 #[derive(Serialize, Deserialize)]
+pub struct SourceMap {
+    pub layers: Vec<SourceLayer>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct Tileset {
+    pub tiles: Vec<TilesetTile>
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TilesetTile {
+    pub properties: Vec<TilesetTileProperty>,
+    pub id: u32
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct TilesetTileProperty {
+    pub value: Vec<TileEntitySerialize>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+pub struct TileSerialize {
+    pub position: Position,
+    pub direction: Direction,
+    pub entity: TileEntitySerialize,
+}
+
+#[derive(Serialize, Deserialize, Clone)]
 pub enum TileEntitySerialize {
     Direct(Vec<GameState>, RobotActionSerialize),
     Indirect(Vec<GameState>, IndirectTileEntitySerialize),
@@ -23,13 +76,13 @@ pub enum TileEntitySerialize {
     Wall,
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum RobotActionSerialize {
     Move,
     InPlace(RobotActionInPlaceSerialize),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum RobotActionInPlaceSerialize {
     Turn,
     Repair(i8),
@@ -39,12 +92,12 @@ pub enum RobotActionInPlaceSerialize {
     ReachCheckpointAndLeaveSafetyCopy(usize),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum IndirectTileEntitySerialize {
     Laser(i8),
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Clone)]
 pub enum OnEntryTileEntitySerialize {
     WithDirection(RobotActionInPlaceSerialize, Direction),
     WithoutDirection(RobotActionInPlaceSerialize),
