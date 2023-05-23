@@ -25,8 +25,8 @@ impl Trainer {
             print!("generating bot {} of {}..", i, PUPULATION_SIZE);
             let bot = Bot::new_random();
             println!("done!");
-            let mut gs = setup::convert(load(), vec![bot.id.clone()], create_card_deck(), Position{x: 5, y: 7});
-            gs.board.add_checkpoints(vec![Position{x:5, y:7}, Position{x:7, y:8}]);
+            let mut gs = setup::convert(load(), vec![bot.id.clone()], create_card_deck(), Position{x: 7, y: 7});
+            gs.board.add_checkpoints(vec![Position{x:7, y:7}, Position{x:7, y:8}]);
 
             pop.push((bot, gs));
         }
@@ -59,12 +59,13 @@ impl Trainer {
         let mut won = false;
 
         while !won {
-            println!("Play round for {}", bot.id);
+            let mut me = store.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
+            println!("Round start for {} at pos x: {}, y: {}", bot.id, me.position.x, me.position.y);
             let mut played_cards = HashMap::new();
             played_cards.insert(bot.id.clone(), bot.play_cards(store));
-            let res = run_game(played_cards, store.clone(), AUTOMATON);
-            won = res.1.is_some();
-            let me = res.0.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
+            let res = run_game(played_cards, store, AUTOMATON);
+            won = res.is_some();
+            me = store.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
             println!("Round done for {} at pos x: {}, y: {}", bot.id, me.position.x, me.position.y);
             thread::sleep(Duration::from_millis(1000));
         }

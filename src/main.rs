@@ -37,17 +37,17 @@ pub fn start_game(game_store: &mut GameStore) {
 
 pub fn run_game<const N: usize>(
     cards_played: HashMap<String, Vec<Card>>,
-    mut game_store: GameStore,
+    mut game_store: &mut GameStore,
     game_automaton: GameAutomaton<{ N }>,
-) -> (GameStore, Option<Vec<String>>) {
+) -> Option<Vec<String>> {
     game_store.players = game_store
         .players
-        .into_iter()
+        .iter_mut()
         .map(|mut player| match cards_played.get(&player.user_name) {
             Some(cards) => {
                 if player.cards_in_hand.is_empty() {
                     player.cards_in_hand = cards.clone();
-                    player
+                    player.clone()
                 } else {
                     for (index, card) in cards.clone().iter_mut().enumerate() {
                         let _discard = std::mem::replace(
@@ -55,15 +55,15 @@ pub fn run_game<const N: usize>(
                             card.clone(),
                         );
                     }
-                    player
+                    player.clone()
                 }
             }
-            None => player,
+            None => player.clone(),
         })
         .collect::<Vec<_>>();
     let winners = game_automaton.round_trip(&mut game_store);
     GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(&mut game_store);
-    (game_store, winners)
+    winners
 }
 
 fn pause() {
