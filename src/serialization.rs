@@ -34,9 +34,11 @@ pub struct TilesetTileProperty {
     pub value: Vec<TileEntitySerialize>,
 }
 
+#[derive(Clone)]
 pub struct TileSerialize {
     pub position: Position,
     pub direction: Direction,
+    pub type_id: usize,
     pub entity: TileEntitySerialize,
 }
 

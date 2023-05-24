@@ -7,7 +7,7 @@ use crate::serialization::TileSerialize;
 use crate::serialization::Tileset;
 use std::fs;
 
-pub fn load() -> Vec<TileEntity> {
+pub fn load() -> Vec<TileSerialize> {
     let mut content = fs::read_to_string(String::from(
         "src\\tiles.json",
     ))
@@ -17,7 +17,7 @@ pub fn load() -> Vec<TileEntity> {
     content = fs::read_to_string("src\\CanneryRow.json").unwrap();
     let raw_map: SourceMap = serde_json::from_str(content.as_str()).unwrap();
 
-    let mut map: Vec<TileEntity> = Vec::new();
+    let mut map: Vec<TileSerialize> = Vec::new();
 
     for i in raw_map.layers.iter().enumerate() {
         map.append(&mut parse(&i.1.data, &tileset));
@@ -26,7 +26,7 @@ pub fn load() -> Vec<TileEntity> {
     map
 }
 
-fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
+fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileSerialize> {
     let mut tiles = Vec::new();
 
     for x in 0..12 {
@@ -50,7 +50,7 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
             }
 
             for prop in tileset.tiles[gl_tile_id].properties[0].value.iter() {
-                tiles.push(TileEntity::from(TileSerialize {
+                tiles.push(TileSerialize {
                     entity: prop.clone(),
                     position: Position {
                         x: x as i32,
@@ -64,7 +64,8 @@ fn parse(data: &[usize], tileset: &Tileset) -> Vec<TileEntity> {
                             matches!(prop, TileEntitySerialize::Wall),
                         ),
                     },
-                }));
+                    type_id: gl_tile_id
+                });
             }
         }
     }

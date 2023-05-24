@@ -4,10 +4,12 @@
 use crate::{
     components::{GameStore, MAX_HP, Card},
     config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES},
-    neural_net::NeuralNet,
+    neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
 use uuid::Uuid;
+
+use super::input_builder;
 
 #[derive(Clone)]
 pub struct Bot {
@@ -75,21 +77,44 @@ impl Bot {
         self.brain.save();
     }
 
-    pub fn play_cards(&self, gs: &GameStore) -> Vec<Card> {
+    pub fn play_cards(&self, gs: &GameStore, map: &Vec<TileSerialize>, checkpoints: &Vec<(usize, Position)>) -> Vec<Card> {
         let me = gs.players.iter().find(|p| p.user_name.eq(&self.id)).unwrap();
         let mut cards = me.cards_in_hand.clone();
         let legal_amount = std::cmp::min(5, cards.len());
         let mut played_cards: Vec<Card> = Vec::new();
         
-        if legal_amount > 0 {
-            let first_card = cards.iter().position(|c| c.is_movement).unwrap();
-            played_cards.push(cards[first_card].clone());
-            cards.remove(first_card);
+        let mut init_res = self.brain.guess(input_builder::get_inputs(self, gs, &played_cards, map, checkpoints));
+        while played_cards.is_empty() {
+            let index = init_res.iter()
+            .enumerate()
+            .max_by(|(_, a), (_, b)| a.total_cmp(b))
+            .map(|(index, _)| index).unwrap();
+
+            if index >= cards.len() || !cards[index].is_movement {
+                init_res[index] = 0.0;
+                continue;
+            }
+
+            played_cards.push(cards[index].clone());
+            cards.remove(index);
         }
         
         for i in 1..legal_amount {
-            played_cards.push(cards.first().unwrap().clone());
-            cards.remove(0);
+            let mut res = self.brain.guess(input_builder::get_inputs(self, gs, &played_cards, map, checkpoints));
+            while played_cards.len() == i {
+                
+                let index = res.iter()
+                .enumerate()
+                .max_by(|(_, a), (_, b)| a.total_cmp(b))
+                .map(|(index, _)| index).unwrap();
+
+                if index >= cards.len() {
+                    res[index] = 0.0;
+                    continue;
+                }
+                played_cards.push(cards[index].clone());
+                cards.remove(index);
+            }
         }
 
         played_cards

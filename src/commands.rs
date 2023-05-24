@@ -53,7 +53,7 @@ impl RobotActionInPlace {
             }
             RobotActionInPlace::TakeDamage(amount) => {
                 robot.hp -= amount;
-                if robot.hp == 0 {
+                if robot.hp <= 0 {
                     robot.alive = false;
                 }
             }

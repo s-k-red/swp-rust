@@ -217,8 +217,6 @@ impl Robot {
         let mut possible_respawn_pos = vec![self.safety_copy_position];
         let mut visited = vec![];
 
-        dbg!(occupied.clone());
-
         while possible_respawn_pos
             .iter()
             .all(|pos| occupied.contains(pos))

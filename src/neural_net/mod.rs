@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use std::ops::Mul;
+
 use itertools::Itertools;
 use rulinalg::matrix::{Matrix, BaseMatrix};
 
@@ -80,7 +82,7 @@ impl NeuralNet {
         let fun: SigmoidActivationFunction = SigmoidActivationFunction{};
         let mut output = Matrix::new(input.len(), 1, input);
 
-        for i in 0..self.hidden_layers {
+        for i in 0..self.hidden_layers+1 {
             output = NeuralNet::calculate_layer(&self.weights[i], &self.biases[i], &output, &fun)
         }
 
@@ -116,7 +118,7 @@ impl NeuralNet {
     }
 
     fn calculate_layer(weights: &Matrix<f64>, biases: &Matrix<f64>, input: &Matrix<f64>, func: &dyn ActivationFunction) -> Matrix<f64> {
-        let result = weights * input + biases;
+        let result = weights.mul(input) + biases;
 
         NeuralNet::apply_activation_function(result, false, func)
     }

@@ -1,31 +1,40 @@
+use std::io::{stdout, Write};
+
+use itertools::Itertools;
 use rand::Rng;
 
 use crate::{
     components::{Board, GameStore, Player, Robot},
-    datatypes::Position,
+    datatypes::Position, serialization_utils::load, card_factory::create_card_deck, setup, serialization::TileSerialize, commands::TileEntity,
 };
 
 use super::bot::Bot;
 
-pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>) -> Vec<(Bot, GameStore)> {
+pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>, map: &Vec<TileSerialize>) -> Vec<(Bot, GameStore)> {
     let mut new_gen = Vec::new();
 
     calc_fitness(last_gen);
+    let mut stdout = stdout();
+    let m = map.iter().map(|t| -> TileEntity {TileEntity::from(t.clone())}).collect_vec();
+
     for _bot in 0..last_gen.len() {
+        print!(".");
+        stdout.flush().unwrap();
         let mut b = pick_bot(last_gen).clone(); //crossover in the future?
         let id = b.id.clone();
         b.mutate();
         new_gen.push((
             b,
-            GameStore {
-                robots: vec![Robot::new(id.clone(), Position { x: 0, y: 7 })],
-                players: vec![Player::new(id.clone())],
-                board: Board::new(Vec::new()),
-                card_deck: Vec::new(),
-                highest_checkpoint: 6,
-            },
-        )); //TODO change
+            setup::convert(
+                m.clone(),
+                vec![id],
+                create_card_deck(),
+                Position { x: 7, y: 7 },
+            ),
+        )); 
     }
+
+    println!("DONE");
 
     new_gen
 }
