@@ -13,6 +13,7 @@ use training::trainer::Trainer;
 use crate::components::Board;
 
 mod automaton;
+mod card_factory;
 pub mod commands;
 mod components;
 mod config;
@@ -25,7 +26,6 @@ mod serialization;
 mod serialization_utils;
 pub mod setup;
 mod training;
-mod card_factory;
 fn main() {
     let mut trainer = Trainer::new();
 
