@@ -217,9 +217,11 @@ impl Robot {
         let mut possible_respawn_pos = vec![self.safety_copy_position];
         let mut visited = vec![];
 
-        while occupied
+        dbg!(occupied.clone());
+
+        while possible_respawn_pos
             .iter()
-            .all(|pos| possible_respawn_pos.contains(pos))
+            .all(|pos| occupied.contains(pos))
         {
             visited.append(&mut possible_respawn_pos);
             possible_respawn_pos = vec![];
@@ -228,7 +230,7 @@ impl Robot {
                 for dir in ALL_DIRECTIONS {
                     let pos_to_inspect = *pos + dir.into();
                     if board.direct_way_blocked(*pos, pos_to_inspect)
-                        || board.is_inbounds(pos_to_inspect)
+                        || !board.is_inbounds(pos_to_inspect)
                         || visited.contains(&pos_to_inspect)
                     {
                         continue;
@@ -236,6 +238,7 @@ impl Robot {
                     possible_respawn_pos.push(pos_to_inspect);
                 }
             }
+            possible_respawn_pos = dbg!(possible_respawn_pos);
         }
         let respawn_pos = possible_respawn_pos
             .iter()
@@ -285,7 +288,14 @@ impl Player {
         Player {
             user_name,
             cards_in_hand: vec![],
-            cards_played: vec![],
+            cards_played: vec![
+                Card {
+                    id: 0,
+                    is_movement: false,
+                    commands: vec![]
+                };
+                5
+            ],
         }
     }
 }

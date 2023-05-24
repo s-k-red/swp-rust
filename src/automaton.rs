@@ -12,7 +12,9 @@ use rand::thread_rng;
 
 pub const AUTOMATON_SIZE: usize = 36;
 pub const AUTOMATON_STATES: [GameState; AUTOMATON_SIZE] = build_automaton_states();
-pub const AUTOMATON: GameAutomaton<AUTOMATON_SIZE> = GameAutomaton::<AUTOMATON_SIZE>{state_transitions: AUTOMATON_STATES};
+pub const AUTOMATON: GameAutomaton<AUTOMATON_SIZE> = GameAutomaton::<AUTOMATON_SIZE> {
+    state_transitions: AUTOMATON_STATES,
+};
 
 const fn build_automaton_states() -> [GameState; AUTOMATON_SIZE] {
     let mut ret = [GameState::Start; AUTOMATON_SIZE];
@@ -126,7 +128,7 @@ impl StateAction for GameState {
                         .iter()
                         .find(|robot| robot.user_name == player.user_name)
                         .expect("player has no robot");
-                    if !robot.alive || robot.hp == 0 {
+                    if !robot.alive || robot.hp <= 1 {
                         continue;
                     }
                     loop {
@@ -161,13 +163,12 @@ impl StateAction for GameState {
                             .iter_mut()
                             .find(|robot| robot.user_name == player.user_name)
                             .map(|robot| {
-                                if robot.user_name == player.user_name {
-                                    let mut actions = ScheduledActions::new(robot);
-                                    actions.push_and_convert(cmd.clone());
-                                }
-                                ScheduledActions::new(robot)
+                                let mut actions = ScheduledActions::new(robot);
+                                actions.push_and_convert(cmd.clone());
+                                actions
                             })
                             .unwrap()];
+
                         let robot_moves =
                             robot_actions.into_iter().map(execute_non_moves).collect();
                         let robot_actions = resolve_card_movement(robot_moves, board, self);

@@ -3,12 +3,13 @@ use crate::{
     components::Robot,
     datatypes::{Direction, Position},
 };
-
+#[derive(Debug)]
 pub struct ScheduledActions<'a> {
     pub robot: &'a mut Robot,
     pub mov: Option<Direction>,
     pub actions: Vec<RobotActionInPlace>,
 }
+#[derive(Debug)]
 pub struct ScheduledMove<'a> {
     pub robot: &'a mut Robot,
     pub mov: Option<Direction>,

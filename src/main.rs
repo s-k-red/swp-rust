@@ -10,7 +10,10 @@ use futures::executor::block_on;
 
 use training::trainer::Trainer;
 
-use crate::components::Board;
+use crate::{
+    components::Board,
+    datatypes::{Direction, Position},
+};
 
 mod automaton;
 mod card_factory;
@@ -28,7 +31,6 @@ pub mod setup;
 mod training;
 fn main() {
     let mut trainer = Trainer::new();
-
     block_on(trainer.start_training());
 }
 pub fn start_game(game_store: &mut GameStore) {
