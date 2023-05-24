@@ -51,7 +51,7 @@ pub fn run_game<const N: usize>(
                 } else {
                     for (index, card) in cards.clone().iter_mut().enumerate() {
                         let _discard = std::mem::replace(
-                            player.cards_in_hand.get_mut(index).unwrap(),
+                            player.cards_played.get_mut(index).unwrap(),
                             card.clone(),
                         );
                     }
