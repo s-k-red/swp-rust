@@ -1,5 +1,7 @@
 use std::{thread, collections::HashMap};
 
+use itertools::Itertools;
+
 use crate::{config::{GENERATIONS, ROUND_THRESHOLD}, training::genetic_alg_utils, start_game, automaton::AUTOMATON, run_game};
 
 use super::trainer::Trainer;
@@ -11,7 +13,7 @@ impl Trainer {
             println!("generating generation: {}", gen);
     
             if gen > 0 {
-                self.population = genetic_alg_utils::next_generation(&mut self.population, &self.map);
+                self.population = Trainer::next_gen(&mut self.population, &self.map);
             }
         
             let mut threads = Vec::new();
@@ -42,15 +44,15 @@ impl Trainer {
                         }
                     }
         
-                    let first_robot = store.robots.first().unwrap();
-                    println!(
-                        "Bot {} won {} in {} rounds with {} deaths and {} checkpoints reached",
-                        bot.id,
-                        bot.won,
-                        bot.round_index,
-                        first_robot.deaths,
-                        first_robot.greatest_checkpoint_reached + 1
-                    );
+                    //let first_robot = store.robots.first().unwrap();
+                    // println!(
+                    //     "Bot {} won {} in {} rounds with {} deaths and {} checkpoints reached",
+                    //     bot.id,
+                    //     bot.won,
+                    //     bot.round_index,
+                    //     first_robot.deaths,
+                    //     first_robot.greatest_checkpoint_reached + 1
+                    // );
                     (bot, store)
                 });
         
@@ -61,6 +63,14 @@ impl Trainer {
                 let (bot, store) = thread.join().expect("Failed to join thread");
                 self.population.push((bot, store));
             }
+
+            println!("Generation {} done with win/loose {}/{} and avg deaths {} and avg rounds {}", 
+                gen, 
+                self.population.iter().filter(|p| p.0.won).count(),
+                self.population.iter().filter(|p| !p.0.won).count(),
+                self.population.iter().map(|p| p.1.robots[0].deaths as usize).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
+                self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
+            )
         }
     }
 }

@@ -1,4 +1,4 @@
-use std::io::{stdout, Write};
+use std::{io::{stdout, Write}, thread::{Thread, self}};
 
 use itertools::Itertools;
 use rand::Rng;
@@ -6,51 +6,110 @@ use rand::Rng;
 use crate::{
     card_factory::create_card_deck,
     commands::TileEntity,
-    components::{Board, GameStore, Player, Robot},
+    components::{GameStore},
     datatypes::Position,
     serialization::TileSerialize,
-    serialization_utils::load,
-    setup,
+    setup, config::{CHECKPOINTS, PUPULATION_SIZE},
 };
 
-use super::bot::Bot;
+use super::{bot::Bot, trainer::Trainer};
 
-pub fn next_generation(
-    last_gen: &mut Vec<(Bot, GameStore)>,
-    map: &Vec<TileSerialize>,
-) -> Vec<(Bot, GameStore)> {
-    let mut new_gen = Vec::new();
+impl Trainer {
+    pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
+        let mut pop = Vec::new();
+        print!("generating bots...");
+        let mut threads = Vec::new();
+        let m = map
+            .iter()
+            .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
+            .collect_vec();
 
-    calc_fitness(last_gen);
-    let mut stdout = stdout();
-    let m = map
-        .iter()
-        .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
-        .collect_vec();
+        for _i in 0..PUPULATION_SIZE {
+            let thread_map = m.clone();
+            threads.push(thread::spawn(move || {
+                let bot = Bot::new_random();
+                let mut gs = setup::convert(
+                    thread_map,
+                vec![bot.id.clone()],
+                create_card_deck(),
+                CHECKPOINTS[0],
+                1,
+                );
+                gs.board
+                    .add_checkpoints(CHECKPOINTS.to_vec());
+                print!(".");
+                stdout().flush().unwrap();
 
-    for _bot in 0..last_gen.len() {
-        print!(".");
-        stdout.flush().unwrap();
-        let mut b = pick_bot(last_gen).clone(); //crossover in the future?
-        let id = b.id.clone();
-        b.mutate();
-        let mut gs = setup::convert(
-            m.clone(),
-            vec![id],
-            create_card_deck(),
-            Position { x: 7, y: 7 },
-            1,
-        );
-        gs.board.add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 10 }]);
-        new_gen.push((
-            b,
-            gs,
-        ));
+                (bot, gs)
+            }));
+        }
+
+        for thread in threads {
+            let (bot, store) = thread.join().expect("Failed to join thread");
+            pop.push((bot, store));
+        }
+
+        println!("DONE");
+
+        pop
     }
 
-    println!("DONE");
+    pub fn gen_from_file(){
+        todo!("load gen from file")
+    }
 
-    new_gen
+    pub fn gen_to_file(){
+        todo!("load gen into file")
+    }
+
+    pub fn next_gen(
+        last_gen: &mut Vec<(Bot, GameStore)>,
+        map: &[TileSerialize],
+    ) -> Vec<(Bot, GameStore)> {
+        let mut new_gen = Vec::new();
+        let mut threads = Vec::new();
+    
+        calc_fitness(last_gen);
+        let m = map
+            .iter()
+            .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
+            .collect_vec();
+    
+        for _bot in 0..last_gen.len() {
+            let lg = last_gen.clone();
+            let thread_m = m.clone();
+            threads.push(thread::spawn(move || {
+                let mut b = pick_bot(&lg).clone(); //crossover in the future?
+                let id = b.id.clone();
+                b.mutate();
+                let mut gs = setup::convert(
+                    thread_m,
+                    vec![id],
+                    create_card_deck(),
+                    Position { x: 7, y: 7 },
+                    1,
+                );
+                gs.board.add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 10 }]);
+                print!(".");
+                stdout().flush().unwrap();
+
+                (b, gs)
+            }));
+            
+        }
+
+        for thread in threads {
+            let (b, gs) = thread.join().expect("Failed to join thread");
+            new_gen.push((
+                b,
+                gs,
+            ));
+        }
+    
+        println!("DONE");
+    
+        new_gen
+    }
 }
 
 fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot {
