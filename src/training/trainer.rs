@@ -57,7 +57,7 @@ impl Trainer {
                 1,
             );
             gs.board
-                .add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 8 }]);
+                .add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 10 }]);
 
             pop.push((bot, gs));
         }
@@ -67,7 +67,7 @@ impl Trainer {
         Trainer {
             population: pop,
             map,
-            checkpoints: vec![(0, Position { x: 7, y: 7 }), (1, Position { x: 7, y: 8 })],
+            checkpoints: vec![(0, Position { x: 7, y: 7 }), (1, Position { x: 7, y: 10 })],
         }
     }
 

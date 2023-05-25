@@ -34,18 +34,20 @@ pub fn next_generation(
         let mut b = pick_bot(last_gen).clone(); //crossover in the future?
         let id = b.id.clone();
         b.mutate();
+        let mut gs = setup::convert(
+            m.clone(),
+            vec![id],
+            create_card_deck(),
+            Position { x: 7, y: 7 },
+            1,
+        );
+        gs.board.add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 10 }]);
         new_gen.push((
             b,
-            setup::convert(
-                m.clone(),
-                vec![id],
-                create_card_deck(),
-                Position { x: 7, y: 7 },
-                1,
-            ),
+            gs,
         ));
     }
-    //Hier fehlen die Checkpoints...
+
     println!("DONE");
 
     new_gen
