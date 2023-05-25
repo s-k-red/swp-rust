@@ -30,8 +30,8 @@ mod serialization_utils;
 pub mod setup;
 mod training;
 fn main() {
-    let mut trainer = Trainer::new();
-    block_on(trainer.start_training());
+    let trainer = Trainer::new();
+    trainer.start_training_async();
 }
 pub fn start_game(game_store: &mut GameStore) {
     GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(game_store);
