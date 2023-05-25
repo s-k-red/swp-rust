@@ -1,7 +1,12 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use std::{collections::HashMap, thread, time::Duration, io::{stdout, Write}};
+use std::{
+    collections::HashMap,
+    io::{stdout, Write},
+    thread,
+    time::Duration,
+};
 
 use futures::future::join_all;
 use itertools::Itertools;
@@ -9,13 +14,15 @@ use itertools::Itertools;
 use crate::{
     automaton::{self, GameAutomaton, AUTOMATON},
     card_factory::create_card_deck,
+    commands::TileEntity,
     components::GameStore,
     config::{GENERATIONS, PUPULATION_SIZE},
     datatypes::Position,
     run_game,
+    serialization::TileSerialize,
     serialization_utils::load,
     setup, start_game,
-    training::genetic_alg_utils, serialization::TileSerialize, commands::TileEntity,
+    training::genetic_alg_utils,
 };
 
 use super::bot::Bot;
@@ -23,7 +30,7 @@ use super::bot::Bot;
 pub struct Trainer {
     pub population: Vec<(Bot, GameStore)>,
     pub map: Vec<TileSerialize>,
-    pub checkpoints: Vec<(usize, Position)>
+    pub checkpoints: Vec<(usize, Position)>,
 }
 
 impl Trainer {
@@ -33,7 +40,10 @@ impl Trainer {
         let map = load();
         print!("generating bots");
         let mut stdout = stdout();
-        let m = map.iter().map(|t| -> TileEntity {TileEntity::from(t.clone())}).collect_vec();
+        let m = map
+            .iter()
+            .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
+            .collect_vec();
 
         for i in 0..PUPULATION_SIZE {
             print!(".");
@@ -44,6 +54,7 @@ impl Trainer {
                 vec![bot.id.clone()],
                 create_card_deck(),
                 Position { x: 7, y: 7 },
+                1,
             );
             gs.board
                 .add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 8 }]);
@@ -53,7 +64,11 @@ impl Trainer {
 
         println!("DONE");
 
-        Trainer { population: pop, map, checkpoints: vec![(0, Position { x: 7, y: 7 }), (1,  Position { x: 7, y: 8 })] }
+        Trainer {
+            population: pop,
+            map,
+            checkpoints: vec![(0, Position { x: 7, y: 7 }), (1, Position { x: 7, y: 8 })],
+        }
     }
 
     pub async fn start_training(&mut self) {
@@ -61,7 +76,8 @@ impl Trainer {
             print!("generating generation: {}", generation);
             stdout().flush().unwrap();
             if generation > 0 {
-                self.population = genetic_alg_utils::next_generation(&mut self.population, &self.map);
+                self.population =
+                    genetic_alg_utils::next_generation(&mut self.population, &self.map);
             }
             println!();
             self.run().await;
@@ -78,8 +94,12 @@ impl Trainer {
         join_all(futs).await;
     }
 
-    async fn play_bot(bot: &mut Bot, store: &mut GameStore, 
-        map: &Vec<TileSerialize>, checkpoints: &Vec<(usize, Position)>) -> Result<bool, ()> {
+    async fn play_bot(
+        bot: &mut Bot,
+        store: &mut GameStore,
+        map: &Vec<TileSerialize>,
+        checkpoints: &Vec<(usize, Position)>,
+    ) -> Result<bool, ()> {
         start_game(store);
         let mut won = false;
         let mut round_index = 0;
@@ -92,7 +112,12 @@ impl Trainer {
             //thread::sleep(Duration::from_millis(1000));
         }
 
-        println!("Bot {} won in {} rounds with {} deaths", bot.id, round_index, store.robots.first().unwrap().deaths);
+        println!(
+            "Bot {} won in {} rounds with {} deaths",
+            bot.id,
+            round_index,
+            store.robots.first().unwrap().deaths
+        );
 
         Ok(true)
     }

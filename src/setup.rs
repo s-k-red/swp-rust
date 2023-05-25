@@ -9,6 +9,7 @@ pub fn convert(
     names: Vec<String>,
     card_deck: Vec<Card>,
     starting_pos: Position,
+    highest_checkpoint: usize,
 ) -> GameStore {
     let res = GameStoreBuilder::default()
         .players(names.clone().into_iter().map(Player::new).collect())
@@ -20,7 +21,7 @@ pub fn convert(
         )
         .card_deck(card_deck)
         .board(Board::new(board))
-        .highest_checkpoint(3) //TODO
+        .highest_checkpoint(highest_checkpoint) //TODO
         .build();
     match res {
         Ok(game_store) => game_store,

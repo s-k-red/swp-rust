@@ -4,18 +4,29 @@ use itertools::Itertools;
 use rand::Rng;
 
 use crate::{
+    card_factory::create_card_deck,
+    commands::TileEntity,
     components::{Board, GameStore, Player, Robot},
-    datatypes::Position, serialization_utils::load, card_factory::create_card_deck, setup, serialization::TileSerialize, commands::TileEntity,
+    datatypes::Position,
+    serialization::TileSerialize,
+    serialization_utils::load,
+    setup,
 };
 
 use super::bot::Bot;
 
-pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>, map: &Vec<TileSerialize>) -> Vec<(Bot, GameStore)> {
+pub fn next_generation(
+    last_gen: &mut Vec<(Bot, GameStore)>,
+    map: &Vec<TileSerialize>,
+) -> Vec<(Bot, GameStore)> {
     let mut new_gen = Vec::new();
 
     calc_fitness(last_gen);
     let mut stdout = stdout();
-    let m = map.iter().map(|t| -> TileEntity {TileEntity::from(t.clone())}).collect_vec();
+    let m = map
+        .iter()
+        .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
+        .collect_vec();
 
     for _bot in 0..last_gen.len() {
         print!(".");
@@ -30,10 +41,11 @@ pub fn next_generation(last_gen: &mut Vec<(Bot, GameStore)>, map: &Vec<TileSeria
                 vec![id],
                 create_card_deck(),
                 Position { x: 7, y: 7 },
+                1,
             ),
-        )); 
+        ));
     }
-
+    //Hier fehlen die Checkpoints...
     println!("DONE");
 
     new_gen
