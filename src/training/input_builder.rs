@@ -5,7 +5,7 @@ use crate::{components::{GameStore, Card}, commands::{OnEntryTileEntity, TileEnt
 use super::bot::Bot;
 
 pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>, 
-    map: &Vec<TileSerialize>, checkpoints: &Vec<(usize, Position)>) -> Vec<f64> {
+    map: &Vec<TileSerialize>, checkpoints: &Vec<Position>) -> Vec<f64> {
     let me = gs.players.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
     let my_robot = gs.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
     let mut cards = me.cards_in_hand.clone();
@@ -35,10 +35,10 @@ pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>,
     input.push(my_robot.safety_copy_amount as f64);
  
     let next_checkpoint = 
-        checkpoints.iter().find(|c| c.0 == my_robot.greatest_checkpoint_reached).unwrap();
+        checkpoints[my_robot.greatest_checkpoint_reached+1];
 
-    input.push(next_checkpoint.1.x as f64);
-    input.push(next_checkpoint.1.y as f64);
+    input.push(next_checkpoint.x as f64);
+    input.push(next_checkpoint.y as f64);
 
 
     for x in 0..12 {

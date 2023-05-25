@@ -3,7 +3,7 @@
 
 use crate::{
     components::{GameStore, MAX_HP, Card},
-    config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES},
+    config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES, CHECKPOINTS},
     neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
@@ -17,6 +17,8 @@ pub struct Bot {
     pub id: String,
     pub normalized_fitness: f64,
     pub own_fitness: f64,
+    pub round_index: usize,
+    pub won: bool
 }
 
 impl Bot {
@@ -27,6 +29,8 @@ impl Bot {
             id,
             normalized_fitness: 0.0,
             own_fitness: 0.0,
+            round_index: 0,
+            won: false
         }
     }
 
@@ -37,6 +41,8 @@ impl Bot {
             brain,
             normalized_fitness: 0.0,
             own_fitness: 0.0,
+            round_index: 0,
+            won: false
         }
     }
 
@@ -49,24 +55,20 @@ impl Bot {
             .find_or_first(|r| r.user_name.eq(&self.id))
             .unwrap();
 
-        // match &game_store.winners {
-        //     Some(winners) => {
-        //         if winners.contains(&robot.user_name) {
-        //             fitness += 1.0;
-        //         }
-        //     }
-        //     None => todo!(),
-        // } //TODODODODOD
+        if self.won {
+            fitness += 1.0;
+            fitness += 1.0/(self.round_index as f64);
+        }
 
-        fitness += robot.greatest_checkpoint_reached as f64 / 6.0; //TODO!!!!! change to max num of checkpoints
+        fitness += robot.greatest_checkpoint_reached as f64 / CHECKPOINTS.len() as f64; //TODO!!!!! change to max num of checkpoints
 
         fitness -= (robot.deaths as f64 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
 
-        fitness -= robot.hp as f64 / MAX_HP as f64;
+        //fitness -= robot.hp as f64 / MAX_HP as f64;
 
-        self.own_fitness = fitness;
+        self.own_fitness = fitness.max(0.0);
 
-        fitness
+        self.own_fitness
     }
 
     pub fn mutate(&mut self) {
@@ -77,7 +79,7 @@ impl Bot {
         self.brain.save();
     }
 
-    pub fn play_cards(&self, gs: &GameStore, map: &Vec<TileSerialize>, checkpoints: &Vec<(usize, Position)>) -> Vec<Card> {
+    pub fn play_cards(&self, gs: &GameStore, map: &Vec<TileSerialize>, checkpoints: &Vec<Position>) -> Vec<Card> {
         let me = gs.players.iter().find(|p| p.user_name.eq(&self.id)).unwrap();
         let mut cards = me.cards_in_hand.clone();
         let legal_amount = std::cmp::min(5, cards.len());
