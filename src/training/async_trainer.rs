@@ -1,4 +1,4 @@
-use std::{thread, collections::HashMap};
+use std::{thread, collections::HashMap, time::{SystemTime, UNIX_EPOCH}};
 
 use itertools::Itertools;
 
@@ -70,7 +70,12 @@ impl Trainer {
                 self.population.iter().filter(|p| !p.0.won).count(),
                 self.population.iter().map(|p| p.1.robots[0].deaths as usize).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
                 self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
-            )
+            );
         }
+    
+        Trainer::gen_to_file(
+            &self.population.iter().map(|p| p.0.clone()).collect_vec(), 
+            GENERATIONS, 
+            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
     }
 }

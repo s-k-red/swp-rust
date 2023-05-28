@@ -15,14 +15,14 @@ mod activation_function;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct NeuralNet{
-    input_nodes: usize,
-    hidden_layers: usize,
-    hidden_nodes: usize,
-    output_nodes: usize,
-    learning_rate: f64,
-    activation_function_key: String,
-    weights: Vec<Matrix<f64>>,
-    biases: Vec<Matrix<f64>>
+    pub input_nodes: usize,
+    pub hidden_layers: usize,
+    pub hidden_nodes: usize,
+    pub output_nodes: usize,
+    pub learning_rate: f64,
+    pub activation_function_key: String,
+    pub weights: Vec<Matrix<f64>>,
+    pub biases: Vec<Matrix<f64>>
 }
 
 impl Eq for NeuralNet {

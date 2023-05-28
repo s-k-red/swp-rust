@@ -1,7 +1,8 @@
-use std::{io::{stdout, Write}, thread::{Thread, self}};
+use std::{io::{stdout, Write}, thread::{Thread, self}, fs};
 
 use itertools::Itertools;
 use rand::Rng;
+use uuid::Uuid;
 
 use crate::{
     card_factory::create_card_deck,
@@ -12,7 +13,7 @@ use crate::{
     setup, config::{CHECKPOINTS, PUPULATION_SIZE},
 };
 
-use super::{bot::Bot, trainer::Trainer};
+use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
 
 impl Trainer {
     pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
@@ -54,12 +55,29 @@ impl Trainer {
         pop
     }
 
-    pub fn gen_from_file(){
-        todo!("load gen from file")
+    pub fn gen_from_file(filepath: String) -> Vec<Bot> {
+        // let serializable_bots = 
+        //     serde_json::from_str(fs::read_to_string(filepath).unwrap().as_str());
+
+        todo!()
     }
 
-    pub fn gen_to_file(){
-        todo!("load gen into file")
+    //version_data unix timestamp
+    pub fn gen_to_file(gen: &[Bot], iteration: usize, version_date: u64){
+        // let serializable_bots = gen.iter().map(|g| 
+        //     SerializableBot::from(g.clone())).collect_vec();
+
+        let best_performing_bot = gen.iter().max_by(|a, b| a.normalized_fitness.total_cmp(&b.normalized_fitness)).unwrap();
+
+        let gen_id = Uuid::new_v4();
+
+        fs::create_dir(format!("gens/gen_{}_{}_{}", gen_id, iteration, version_date)).unwrap();
+
+        // fs::write(format!("gens/gen_{}_{}_{}/gen_{}.json", gen_id, iteration, version_date, gen_id), 
+        //     serde_json::to_string(&serializable_bots).unwrap())
+        //     .expect("failed to save gen");
+    
+        fs::write(format!("gens/gen_{}_{}_{}/best_bot.json", gen_id, iteration, version_date), serde_json::to_string(&SerializableBot::from(best_performing_bot.clone())).unwrap()).expect("failed to save best bot");
     }
 
     pub fn next_gen(
