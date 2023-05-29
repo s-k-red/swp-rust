@@ -14,4 +14,4 @@ pub const MUTATION_RATE: f32 = 0.01; //1%
 pub const GENERATIONS: usize = 1;
 pub const PUPULATION_SIZE: i32 = 1;
 pub const CHECKPOINTS: &[Position] = &[Position { x: 7, y: 10 }, Position { x: 2, y: 10 }, Position {x: 2, y: 7}];
-pub const ROUND_THRESHOLD: usize = 100;
+pub const ROUND_THRESHOLD: usize = 30;
