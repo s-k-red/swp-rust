@@ -4,8 +4,8 @@
 use rulinalg::matrix::{Matrix, BaseMatrix};
 
 pub trait ActivationFunction {
-    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64>;
-    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64>;
+    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f32>) -> Matrix<f32>;
+    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f32>) -> Matrix<f32>;
     fn get_name(&self) -> String;
 }
 // pub struct ActivationFunctionFactory {
@@ -29,12 +29,12 @@ pub trait ActivationFunction {
 pub struct SigmoidActivationFunction {}
 
 impl ActivationFunction for SigmoidActivationFunction {
-    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64> {
+    fn apply_activation_func_to_matrix(&self, matrix: Matrix<f32>) -> Matrix<f32> {
         let mut data = Vec::new();
 
         for i in 0..matrix.rows() {
             let val = matrix.data()[i]; //only one col so this is fine
-            let res = 1f64 / (1f64 + (-val).exp());
+            let res = 1f32 / (1f32 + (-val).exp());
 
             data.push(res);
         }
@@ -42,12 +42,12 @@ impl ActivationFunction for SigmoidActivationFunction {
         Matrix::new(matrix.rows(), matrix.cols(), data)
     }
 
-    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f64>) -> Matrix<f64> {
+    fn apply_derivative_of_activation_func_to_matrix(&self, matrix: Matrix<f32>) -> Matrix<f32> {
         let mut data = Vec::new();
 
         for i in 0..matrix.rows() {
             let val = matrix.data()[i]; //only one col so this is fine
-            let res = 1f64 / (1f64 - val);
+            let res = 1f32 / (1f32 - val);
 
             data.push(res);
         }

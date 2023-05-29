@@ -133,7 +133,7 @@ impl Trainer {
 fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot {
     let mut rnd = rand::thread_rng();
     let mut index = 0;
-    let mut r = rnd.gen::<f64>();
+    let mut r = rnd.gen::<f32>();
 
     while r > 0.0 {
         r -= last_gen[index].0.normalized_fitness;

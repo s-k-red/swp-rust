@@ -6,7 +6,7 @@ use std::fs;
 use rand::Rng;
 use rulinalg::matrix::{Matrix, BaseMatrix};
 
-pub fn random_matrix(rows: usize, cols:usize, from:f64, to:f64) -> Matrix<f64> {
+pub fn random_matrix(rows: usize, cols:usize, from:f32, to:f32) -> Matrix<f32> {
     let mut vals = Vec::new();
     let mut rng = rand::thread_rng();
 
@@ -19,7 +19,7 @@ pub fn random_matrix(rows: usize, cols:usize, from:f64, to:f64) -> Matrix<f64> {
     Matrix::new(rows, cols, vals)
 }
 
-pub fn save_matrix(matrix: Matrix<f64>, filepath: &str){
+pub fn save_matrix(matrix: Matrix<f32>, filepath: &str){
     let vals = matrix.data();
     let mut output = String::new();
 
@@ -35,7 +35,7 @@ pub fn save_matrix(matrix: Matrix<f64>, filepath: &str){
     let res = fs::write(filepath, output);
 }
 
-pub fn mutate(mat: &Matrix<f64>, rate: f64) -> Matrix<f64> {
+pub fn mutate(mat: &Matrix<f32>, rate: f32) -> Matrix<f32> {
     let mut vals = Vec::new();
 
     for row in 0..mat.rows() {
@@ -43,8 +43,8 @@ pub fn mutate(mat: &Matrix<f64>, rate: f64) -> Matrix<f64> {
 
         for col in 0..mat.cols() {
             let current_val = *mat.data().get(mat.cols() * row + col).unwrap();
-            if rng.gen::<f64>() < rate { //TODO: maybe change?
-                vals.push(rng.gen::<f64>() * 2.0 - 1.0); //TODO: maybe change? for now completely random
+            if rng.gen::<f32>() < rate { //TODO: maybe change?
+                vals.push(rng.gen::<f32>() * 2.0 - 1.0); //TODO: maybe change? for now completely random
             } else {
                 vals.push(current_val);   
             }
