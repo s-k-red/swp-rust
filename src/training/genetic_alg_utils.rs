@@ -85,7 +85,6 @@ impl Trainer {
         map: &[TileSerialize],
     ) -> Vec<(Bot, GameStore)> {
         let mut new_gen = Vec::new();
-        let mut threads = Vec::new();
     
         calc_fitness(last_gen);
         let m = map
@@ -94,30 +93,19 @@ impl Trainer {
             .collect_vec();
     
         for _bot in 0..last_gen.len() {
-            let lg = last_gen.clone();
-            let thread_m = m.clone();
-            threads.push(thread::spawn(move || {
-                let mut b = pick_bot(&lg).clone(); //crossover in the future?
-                let id = b.id.clone();
-                b.mutate();
-                let mut gs = setup::convert(
-                    thread_m,
-                    vec![id],
-                    create_card_deck(),
-                    Position { x: 7, y: 7 },
-                    1,
-                );
-                gs.board.add_checkpoints(vec![Position { x: 7, y: 7 }, Position { x: 7, y: 10 }]);
-                print!(".");
-                stdout().flush().unwrap();
-
-                (b, gs)
-            }));
-            
-        }
-
-        for thread in threads {
-            let (b, gs) = thread.join().expect("Failed to join thread");
+            let mut b = pick_bot(last_gen).clone(); //crossover in the future?
+            let id = b.id.clone();
+            b.mutate();
+            let mut gs = setup::convert(
+                m.clone(),
+                vec![id],
+                create_card_deck(),
+                CHECKPOINTS[0],
+                1,
+            );
+            gs.board.add_checkpoints(CHECKPOINTS.to_vec());
+            print!(".");
+            stdout().flush().unwrap();
             new_gen.push((
                 b,
                 gs,
