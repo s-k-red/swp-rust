@@ -13,8 +13,8 @@ pub struct SerializableBot {
     pub hidden_nodes: usize,
     pub output_nodes: usize,
     pub activation_function_key: String,
-    pub weights: Vec<Vec<f64>>,
-    pub biases: Vec<Vec<f64>>,
+    pub weights: Vec<Vec<f32>>,
+    pub biases: Vec<Vec<f32>>,
 }
 
 impl From<Bot> for SerializableBot {

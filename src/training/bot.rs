@@ -4,7 +4,7 @@
 use crate::{
     components::{GameStore, MAX_HP, Card},
     config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES, CHECKPOINTS},
-    neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
+    neural_net_cpu::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
 use serde::Serialize;
@@ -16,8 +16,8 @@ use super::input_builder;
 pub struct Bot {
     pub brain: NeuralNet,
     pub id: String,
-    pub normalized_fitness: f64,
-    pub own_fitness: f64,
+    pub normalized_fitness: f32,
+    pub own_fitness: f32,
     pub round_index: usize,
     pub last_deaths: i8,
     pub won: bool
@@ -50,7 +50,7 @@ impl Bot {
         }
     }
 
-    pub fn calc_own_fitness(&mut self, game_store: &GameStore) -> f64 {
+    pub fn calc_own_fitness(&mut self, game_store: &GameStore) -> f32 {
         //maybe this has to be done after each round in the future
         let mut fitness = 0.0;
         let robot = game_store
@@ -63,14 +63,14 @@ impl Bot {
         if self.won {
             fitness += 1.0;
             //TODO maybe change? 2 rounds per checkpoint too much?
-            fitness += (2.0 * (game_store.highest_checkpoint+1) as f64)/(self.round_index as f64);
+            fitness += (2.0 * (game_store.highest_checkpoint+1) as f32)/(self.round_index as f32);
         } else { // is else a good idea or should they get a reward every time?
-            fitness += robot.greatest_checkpoint_reached as f64 / CHECKPOINTS.len() as f64; //TODO!!!!! change to max num of checkpoints
+            fitness += robot.greatest_checkpoint_reached as f32 / CHECKPOINTS.len() as f32; //TODO!!!!! change to max num of checkpoints
         }
 
-        fitness -= (robot.deaths as f64 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
+        fitness -= (robot.deaths as f32 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
 
-        //fitness -= robot.hp as f64 / MAX_HP as f64;
+        //fitness -= robot.hp as f32 / MAX_HP as f32;
 
         self.own_fitness = fitness.max(0.0);
 
@@ -128,7 +128,7 @@ impl Bot {
         played_cards
     }
 
-    fn play_card(&self, input: Vec<f64>) -> usize{
+    fn play_card(&self, input: Vec<f32>) -> usize{
         self.brain.guess(input).iter()
         .enumerate()
         .max_by(|(_, a), (_, b)| a.total_cmp(b))
