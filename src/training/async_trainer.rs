@@ -10,8 +10,7 @@ use super::trainer::Trainer;
 impl Trainer {
     pub fn start_training_async(mut self) {
         for gen in 0..GENERATIONS {
-            println!("generating generation: {}", gen);
-    
+            println!("generation: {}", gen);    
             if gen > 0 {
                 let filtered_pop = &mut self.population.into_iter()
                 .filter(|p| p.0.won)
@@ -20,7 +19,13 @@ impl Trainer {
             }
         
             let mut threads = Vec::new();
-            let pop = self.population.clone();
+            let mut pop = Vec::new();
+
+            while let Some(element) = self.population.first().cloned() {
+                pop.push(element.clone());
+                self.population.drain(..1);
+            }
+
             self.population.clear();
             let map = self.map.clone();
             let checkpoints = self.checkpoints.clone(); // Clone the checkpoints vector
@@ -43,7 +48,7 @@ impl Trainer {
                         bot.round_index += 1;
         
                         if bot.round_index > ROUND_THRESHOLD {
-                            break;
+                            return (bot, store);
                         }
                     }
         

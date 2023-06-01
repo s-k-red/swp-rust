@@ -19,18 +19,15 @@ impl Trainer {
     pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
         let mut pop = Vec::new();
         print!("generating bots...");
-        let mut threads = Vec::new();
         let m = map
             .iter()
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
 
         for _i in 0..PUPULATION_SIZE {
-            let thread_map = m.clone();
-            threads.push(thread::spawn(move || {
                 let bot = Bot::new_random();
                 let mut gs = setup::convert(
-                    thread_map,
+                    m.clone(),
                 vec![bot.id.clone()],
                 create_card_deck(),
                 CHECKPOINTS[0],
@@ -40,14 +37,7 @@ impl Trainer {
                     .add_checkpoints(CHECKPOINTS.to_vec());
                 print!(".");
                 stdout().flush().unwrap();
-
-                (bot, gs)
-            }));
-        }
-
-        for thread in threads {
-            let (bot, store) = thread.join().expect("Failed to join thread");
-            pop.push((bot, store));
+                pop.push((bot, gs));
         }
 
         println!("DONE");
