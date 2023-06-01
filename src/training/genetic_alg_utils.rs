@@ -92,7 +92,7 @@ impl Trainer {
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
     
-        for _bot in 0..last_gen.len() {
+        for _bot in 0..PUPULATION_SIZE {
             let mut b = pick_bot(last_gen).clone(); //crossover in the future?
             let id = b.id.clone();
             b.mutate();
