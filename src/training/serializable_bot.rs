@@ -1,4 +1,5 @@
 use itertools::Itertools;
+use rulinalg::matrix::BaseMatrix;
 use serde::{Serialize, Deserialize};
 
 use super::bot::Bot;
@@ -13,8 +14,15 @@ pub struct SerializableBot {
     pub hidden_nodes: usize,
     pub output_nodes: usize,
     pub activation_function_key: String,
-    pub weights: Vec<Vec<f32>>,
-    pub biases: Vec<Vec<f32>>,
+    pub weights: Vec<SerializableMatrix>,
+    pub biases: Vec<SerializableMatrix>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct SerializableMatrix {
+    pub cols: usize,
+    pub rows: usize,
+    pub data: Vec<f32>
 }
 
 impl From<Bot> for SerializableBot {
@@ -29,9 +37,17 @@ impl From<Bot> for SerializableBot {
             output_nodes: bot.brain.output_nodes, 
             activation_function_key: bot.brain.activation_function_key, 
             weights: bot.brain.weights.iter()
-                        .map(|w| w.data().clone()).collect_vec(), 
+                        .map(|w| SerializableMatrix{
+                            cols: w.cols(),
+                            rows: w.rows(),
+                            data: w.data().clone()
+                        }).collect_vec(), 
             biases: bot.brain.biases.iter()
-                        .map(|w| w.data().clone()).collect_vec() 
+                        .map(|w| SerializableMatrix{
+                            cols: w.cols(),
+                            rows: w.rows(),
+                            data: w.data().clone()
+                        }).collect_vec() 
         }
     }
 }
