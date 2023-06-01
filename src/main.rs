@@ -63,8 +63,8 @@ pub fn run_game<const N: usize>(
             None => player.clone(),
         })
         .collect::<Vec<_>>();
-    let winners = game_automaton.round_trip(&mut game_store);
-    GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(&mut game_store);
+    let winners = game_automaton.round_trip(game_store);
+    GameAutomaton::<AUTOMATON_SIZE>::hand_out_cards(game_store);
     winners
 }
 
