@@ -10,8 +10,8 @@ pub const INPUT_NODES: usize = 9 + 5 + 2 + 1 + 1 + 1 + 1 * 2 + 4 * 12 * 12 * 2 +
 //Amount of hand cards
 pub const OUTPUT_NODES: usize = 9;
 pub const HIDDEN_LAYERS: usize = 1;
-pub const MUTATION_RATE: f32 = 0.1; //10%
-pub const GENERATIONS: usize = 2;
-pub const PUPULATION_SIZE: i32 = 150;
-pub const CHECKPOINTS: &[Position] = &[Position { x: 7, y: 10 }, Position { x: 2, y: 10 }];
-pub const ROUND_THRESHOLD: usize = 100;
+pub const MUTATION_RATE: f32 = 0.01; //1%
+pub const GENERATIONS: usize = 1;
+pub const PUPULATION_SIZE: i32 = 1;
+pub const CHECKPOINTS: &[Position] = &[Position { x: 7, y: 10 }, Position { x: 2, y: 10 }, Position {x: 2, y: 7}];
+pub const ROUND_THRESHOLD: usize = 30;

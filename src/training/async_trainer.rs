@@ -13,7 +13,10 @@ impl Trainer {
             println!("generating generation: {}", gen);
     
             if gen > 0 {
-                self.population = Trainer::next_gen(&mut self.population, &self.map);
+                let filtered_pop = &mut self.population.into_iter()
+                .filter(|p| p.0.won)
+                .collect_vec();
+                self.population = Trainer::next_gen(filtered_pop, &self.map);
             }
         
             let mut threads = Vec::new();
