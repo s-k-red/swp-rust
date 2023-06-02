@@ -159,19 +159,25 @@ impl StateAction for GameState {
 
                 for (player, card) in cards {
                     for cmd in &card.commands {
-                        let robot_actions = vec![robots
-                            .iter_mut()
-                            .find(|robot| robot.user_name == player.user_name)
+                        robots.sort_unstable_by_key(|robot| (robot.user_name != player.user_name));
+
+                        let (robot, rest) = robots.split_at_mut(1);
+                        let sh = robot
+                            .into_iter()
                             .map(|robot| {
                                 let mut actions = ScheduledActions::new(robot);
                                 actions.push_and_convert(cmd.clone());
                                 actions
                             })
-                            .unwrap()];
-
-                        let robot_moves =
-                            robot_actions.into_iter().map(execute_non_moves).collect();
-                        let robot_actions = resolve_card_movement(robot_moves, board, self);
+                            .next()
+                            .expect("expected one matching robot");
+                        let sh = execute_non_moves(sh);
+                        let robot_actions = resolve_card_movement(
+                            sh,
+                            rest.into_iter().collect::<Vec<&mut Robot>>(),
+                            board,
+                            self,
+                        );
                         for robot_action in robot_actions {
                             execute(robot_action);
                         }

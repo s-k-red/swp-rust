@@ -83,57 +83,40 @@ fn test_moving_to_same(
 }
 
 pub fn resolve_card_movement<'a>(
-    robot_moves: Vec<ScheduledMove<'a>>, //will only contain one actual move
+    mut robot_move: ScheduledMove<'a>, //will only contain one actual move
+    mut robots: Vec<&'a mut Robot>,
     board: &'a Board,
     game_state: &GameState,
 ) -> Vec<ScheduledActions<'a>> {
-    resolve_card_movement_rec(robot_moves, board, game_state, vec![])
-}
+    let mut res = Vec::new();
+    loop {
+        if board.direct_way_blocked(robot_move.robot.position, robot_move.simulate()) {
+            return vec![];
+        }
 
-fn resolve_card_movement_rec<'a>(
-    robot_moves: Vec<ScheduledMove<'a>>, //will only contain one actual move
-    board: &'a Board,
-    game_state: &GameState,
-    mut resolved_positions: Vec<Position>,
-) -> Vec<ScheduledActions<'a>> {
-    let (mut robot_moves, any_cancelled) = cancel_walls(robot_moves, board);
-
-    if any_cancelled {
-        return cancel_all(robot_moves);
-    }
-
-    let move_vector = robot_moves
-        .iter()
-        .find(|mov| mov.mov.is_some() && !resolved_positions.contains(&mov.robot.position))
-        .map(|mov| (mov.robot.position, mov.mov.unwrap()));
-
-    if let Some(move_vector_unwrap) = move_vector {
-        resolved_positions.push(move_vector_unwrap.0);
-
-        let mut iter = robot_moves
-            .iter_mut()
-            .filter(|mov| mov.robot.position == move_vector_unwrap.0)
-            .peekable();
-        let mov = iter.next();
-        match mov {
-            Some(mov) => {
-                if iter.peek().is_some() {
-                    return cancel_all(robot_moves);
-                } else {
-                    resolved_positions.push(mov.robot.position);
-                    return resolve_card_movement_rec(
-                        robot_moves,
-                        board,
-                        game_state,
-                        resolved_positions,
-                    );
+        let next_pos = robot_move.simulate();
+        match robots
+            .iter()
+            .filter(|robot| robot.position == next_pos)
+            .count()
+        {
+            c if 1 < c => return vec![],
+            c if 1 == c => {
+                let mov = robot_move.mov;
+                res.push(robot_move);
+                robots.sort_unstable_by_key(|robot| (robot.position != next_pos));
+                robot_move = ScheduledMove {
+                    mov,
+                    robot: robots.swap_remove(0),
                 }
             }
-            None => return calculate_on_entry(robot_moves, board, game_state),
+            _ => {
+                res.push(robot_move);
+                break;
+            }
         }
-    } else {
-        return calculate_on_entry(robot_moves, board, game_state);
     }
+    calculate_on_entry(res, board, game_state)
 }
 
 pub fn calculate_on_entry<'a>(
