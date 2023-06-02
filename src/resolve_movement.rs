@@ -142,13 +142,6 @@ pub fn calculate_on_entry<'a>(
         .collect()
 }
 
-pub fn cancel_all(robot_moves: Vec<ScheduledMove>) -> Vec<ScheduledActions> {
-    robot_moves
-        .into_iter()
-        .map(|mov| ScheduledActions::new(mov.robot))
-        .collect()
-}
-
 pub fn cancel_walls<'a>(
     robot_moves: Vec<ScheduledMove<'a>>,
     board: &'a Board,
