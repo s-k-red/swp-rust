@@ -22,6 +22,7 @@ mod components;
 mod config;
 pub mod datatypes;
 mod game_states;
+mod movement_test;
 mod neural_net;
 mod resolve_movement;
 pub mod scheduled_commands;

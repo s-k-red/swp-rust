@@ -55,7 +55,7 @@ pub struct GameStore {
 #[derive(Debug, Clone)]
 pub struct Board {
     pub walls: HashSet<Wall>,
-    pos_inbounds: HashSet<Position>,
+    pub pos_inbounds: HashSet<Position>,
     pub direct_tile_eintities: HashMap<GameState, HashMap<Position, Vec<RobotAction>>>,
     pub indirect_tile_eintities: HashMap<GameState, Vec<IndirectTileEntity>>,
     pub on_entry_tile_eintities: HashMap<GameState, HashMap<Position, Vec<OnEntryTileEntity>>>,
