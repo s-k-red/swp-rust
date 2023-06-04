@@ -84,6 +84,10 @@ impl Trainer {
     
         for _bot in 0..PUPULATION_SIZE {
             let mut b = pick_bot(last_gen).clone(); //crossover in the future?
+            b.round_index = 0;
+            b.own_fitness = 0.0;
+            b.normalized_fitness = 0.0;
+            b.won = false;
             let id = b.id.clone();
             b.mutate();
             let mut gs = setup::convert(

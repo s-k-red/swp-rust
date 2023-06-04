@@ -13,5 +13,5 @@ pub const HIDDEN_LAYERS: usize = 1;
 pub const MUTATION_RATE: f32 = 0.01; //1%
 pub const GENERATIONS: usize = 2;
 pub const PUPULATION_SIZE: i32 = 30;
-pub const CHECKPOINTS: &[Position] = &[Position { x: 7, y: 10 }, Position { x: 2, y: 10 }, Position {x: 2, y: 7}];
+pub const CHECKPOINTS: &[Position] = &[Position { x: 7, y: 10 }, Position { x: 2, y: 10 }, Position {x: 1, y: 7}];
 pub const ROUND_THRESHOLD: usize = 30;
