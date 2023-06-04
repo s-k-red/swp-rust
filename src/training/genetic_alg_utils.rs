@@ -18,13 +18,12 @@ use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
 impl Trainer {
     pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
         let mut pop = Vec::new();
-        print!("generating bots...");
         let m = map
             .iter()
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
 
-        for _i in 0..PUPULATION_SIZE {
+        for i in 0..PUPULATION_SIZE {
                 let bot = Bot::new_random();
                 let mut gs = setup::convert(
                     m.clone(),
@@ -35,12 +34,12 @@ impl Trainer {
                 );
                 gs.board
                     .add_checkpoints(CHECKPOINTS.to_vec());
-                print!(".");
+                print!("\r{}/{}", i+1, PUPULATION_SIZE);
                 stdout().flush().unwrap();
                 pop.push((bot, gs));
         }
 
-        println!("DONE");
+        println!("");
 
         pop
     }
@@ -82,12 +81,14 @@ impl Trainer {
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
     
-        for _bot in 0..PUPULATION_SIZE {
+        for i in 0..PUPULATION_SIZE {
             let mut b = pick_bot(last_gen).clone(); //crossover in the future?
             b.round_index = 0;
             b.own_fitness = 0.0;
             b.normalized_fitness = 0.0;
             b.won = false;
+            b.id = Uuid::new_v4().to_string();
+            b.last_deaths = 0;
             let id = b.id.clone();
             b.mutate();
             let mut gs = setup::convert(
@@ -98,7 +99,7 @@ impl Trainer {
                 1,
             );
             gs.board.add_checkpoints(CHECKPOINTS.to_vec());
-            print!(".");
+            print!("\r{}/{}", i+1, PUPULATION_SIZE);
             stdout().flush().unwrap();
             new_gen.push((
                 b,
@@ -106,7 +107,7 @@ impl Trainer {
             ));
         }
     
-        println!("DONE");
+        println!("");
     
         new_gen
     }
