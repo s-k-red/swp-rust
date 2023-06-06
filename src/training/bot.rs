@@ -92,19 +92,28 @@ impl Bot {
         let mut played_cards: Vec<Card> = Vec::new();
         
         let mut init_res = self.brain.guess(input_builder::get_inputs(self, gs, &played_cards, map, checkpoints));
-        while played_cards.is_empty() {
-            let index = init_res.iter()
-            .enumerate()
-            .max_by(|(_, a), (_, b)| a.total_cmp(b))
-            .map(|(index, _)| index).unwrap();
 
-            if index >= cards.len() || !cards[index].is_movement {
-                init_res[index] = 0.0;
+        let indexed_array: Vec<(usize, f32)> = init_res
+        .iter()
+        .enumerate()
+        .map(|(i, &val)| (i, val))
+        .collect();
+
+        let sorted_array: Vec<(usize, f32)> = indexed_array
+        .iter()
+        .copied()
+        .sorted_by(|(_, a), (_, b)| b.partial_cmp(a).unwrap())
+        .collect_vec();
+
+        for i in sorted_array {
+            if i.0 >= cards.len() || !cards[i.0].is_movement {
+                init_res[i.0] = 0.0;
                 continue;
             }
 
-            played_cards.push(cards[index].clone());
-            cards.remove(index);
+            played_cards.push(cards[i.0].clone());
+            cards.remove(i.0);
+            break;
         }
         
         for i in 1..legal_amount {
