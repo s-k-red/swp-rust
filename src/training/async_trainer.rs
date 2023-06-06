@@ -73,6 +73,8 @@ impl Trainer {
                 self.population.push((bot, store));
             }
 
+            println!("\rTotal rounds {}", self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>());
+
             println!("\rGeneration {} done with win/loose {}/{} and avg deaths {} and avg rounds {}", 
                 gen, 
                 self.population.iter().filter(|p| p.0.won).count(),

@@ -3,7 +3,7 @@
 
 use crate::{
     components::{GameStore, MAX_HP, Card},
-    config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES, CHECKPOINTS},
+    config::{HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES, CHECKPOINTS, HIDDEN_NODES},
     neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
@@ -27,7 +27,7 @@ impl Bot {
     pub fn new_random() -> Bot {
         let id = Uuid::new_v4().to_string();
         Bot {
-            brain: NeuralNet::new(INPUT_NODES, HIDDEN_LAYERS, INPUT_NODES, OUTPUT_NODES),
+            brain: NeuralNet::new(INPUT_NODES, HIDDEN_LAYERS, HIDDEN_NODES, OUTPUT_NODES),
             id,
             normalized_fitness: 0.0,
             own_fitness: 0.0,

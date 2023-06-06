@@ -1,6 +1,8 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
+use itertools::Itertools;
+
 use crate::{
     config::{ CHECKPOINTS},
     datatypes::Position,
@@ -8,7 +10,7 @@ use crate::{
     serialization_utils::load, components::GameStore,
 };
 
-use super::bot::Bot;
+use super::{bot::Bot, random_checkpoints};
 
 pub struct Trainer {
     pub population: Vec<(Bot, GameStore)>,
@@ -23,7 +25,7 @@ impl Trainer {
         Trainer {
             population: Trainer::random_gen(&map),
             map,
-            checkpoints: CHECKPOINTS.to_vec(),
+            checkpoints: random_checkpoints(),
         }
     }
 }

@@ -1,20 +1,20 @@
 use itertools::Itertools;
 
-use crate::{components::{GameStore, Card}, commands::{OnEntryTileEntity, TileEntity}, serialization::{TileEntitySerialize, TileSerialize}, datatypes::Position};
+use crate::{components::{GameStore, Card}, serialization::TileSerialize, datatypes::Position};
 
 use super::bot::Bot;
 
 pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>, 
-    map: &Vec<TileSerialize>, checkpoints: &Vec<Position>) -> Vec<f32> {
+    map: &[TileSerialize], checkpoints: &[Position]) -> Vec<f32> {
     let me = gs.players.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
     let my_robot = gs.robots.iter().find(|p| p.user_name.eq(&bot.id)).unwrap();
-    let mut cards = me.cards_in_hand.clone();
+    let cards = me.cards_in_hand.clone();
 
     let mut input = Vec::new();
 
     for i in 0..9 {
         if cards.len() > i {
-            input.push(cards[i].id as f32);
+            input.push((cards[i].id as f32) / 10.0);
         } else {
             input.push(-1.0);
         }
@@ -22,7 +22,7 @@ pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>,
 
     for i in 0..5 {
         if already_played_cards.len() > i {
-            input.push(already_played_cards[i].id as f32);
+            input.push((already_played_cards[i].id as f32) / 10.0);
         } else {
             input.push(-1.0);
         }
@@ -60,7 +60,7 @@ pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>,
         }
     }
 
-    for other_robot in 0..4 {
+    for _other_robot in 0..4 {
         input.push(-1.0); //x
         input.push(-1.0); //y
         input.push(-1.0); //direction

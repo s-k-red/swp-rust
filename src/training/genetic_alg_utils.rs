@@ -10,7 +10,7 @@ use crate::{
     components::{GameStore},
     datatypes::Position,
     serialization::TileSerialize,
-    setup, config::{CHECKPOINTS, PUPULATION_SIZE},
+    setup, config::{CHECKPOINTS, PUPULATION_SIZE}, training::random_checkpoints,
 };
 
 use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
@@ -24,16 +24,17 @@ impl Trainer {
             .collect_vec();
 
         for i in 0..PUPULATION_SIZE {
+                let cp = random_checkpoints();
                 let bot = Bot::new_random();
                 let mut gs = setup::convert(
                     m.clone(),
                 vec![bot.id.clone()],
                 create_card_deck(),
-                CHECKPOINTS[0],
+                cp[0],
                 1,
                 );
                 gs.board
-                    .add_checkpoints(CHECKPOINTS.to_vec());
+                    .add_checkpoints(cp);
                 print!("\r{}/{}", i+1, PUPULATION_SIZE);
                 stdout().flush().unwrap();
                 pop.push((bot, gs));
@@ -91,14 +92,15 @@ impl Trainer {
             b.last_deaths = 0;
             let id = b.id.clone();
             b.mutate();
+            let cp = random_checkpoints();
             let mut gs = setup::convert(
                 m.clone(),
                 vec![id],
                 create_card_deck(),
-                CHECKPOINTS[0],
+                cp[0],
                 1,
             );
-            gs.board.add_checkpoints(CHECKPOINTS.to_vec());
+            gs.board.add_checkpoints(cp);
             print!("\r{}/{}", i+1, PUPULATION_SIZE);
             stdout().flush().unwrap();
             new_gen.push((
