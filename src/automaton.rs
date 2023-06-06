@@ -163,7 +163,7 @@ impl StateAction for GameState {
 
                         let (robot, rest) = robots.split_at_mut(1);
                         let sh = robot
-                            .into_iter()
+                            .iter_mut()
                             .map(|robot| {
                                 let mut actions = ScheduledActions::new(robot);
                                 actions.push_and_convert(cmd.clone());
@@ -174,7 +174,7 @@ impl StateAction for GameState {
                         let sh = execute_non_moves(sh);
                         let robot_actions = resolve_card_movement(
                             sh,
-                            rest.into_iter().collect::<Vec<&mut Robot>>(),
+                            rest.iter_mut().collect::<Vec<&mut Robot>>(),
                             board,
                             self,
                         );

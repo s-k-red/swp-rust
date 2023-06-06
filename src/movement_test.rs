@@ -187,3 +187,27 @@ fn kill1() {
     }
     assert!(!robot.alive)
 }
+#[test]
+fn game_end() {
+    let mut board = setup(2, HashSet::new());
+    board.add_checkpoints(vec![Position { x: 0, y: 0 }, Position { x: 0, y: 1 }]);
+    let mut robot = Robot::new("test".into(), Position { x: 0, y: 0 });
+    let shed = ScheduledMove {
+        robot: &mut robot,
+        mov: Some(Direction::new(0)),
+    };
+
+    let ret = resolve_card_movement(
+        shed,
+        vec![],
+        &board,
+        &crate::game_states::GameState::FactoryState(
+            0,
+            crate::game_states::FactoryState::ExpressBelt,
+        ),
+    );
+    for action in ret {
+        execute(action);
+    }
+    dbg!(robot);
+}
