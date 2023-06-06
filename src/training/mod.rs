@@ -5,3 +5,4 @@ mod input_builder;
 mod async_trainer;
 mod sync_trainer;
 mod serializable_bot;
+mod debug_bot;

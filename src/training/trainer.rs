@@ -8,10 +8,10 @@ use crate::{
     serialization_utils::load, components::GameStore,
 };
 
-use super::bot::Bot;
+use super::{bot::Bot, debug_bot::DebugBot};
 
 pub struct Trainer {
-    pub population: Vec<(Bot, GameStore)>,
+    pub population: Vec<(DebugBot, GameStore)>,
     pub map: Vec<TileSerialize>,
     pub checkpoints: Vec<Position>,
 }

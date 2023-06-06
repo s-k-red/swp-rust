@@ -82,9 +82,9 @@ impl Trainer {
             );
         }
     
-        Trainer::gen_to_file(
-            &self.population.iter().map(|p| p.0.clone()).collect_vec(), 
-            GENERATIONS, 
-            SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
+        // Trainer::gen_to_file(
+        //     &self.population.iter().map(|p| p.0.clone()).collect_vec(), 
+        //     GENERATIONS, 
+        //     SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs());
     }
 }

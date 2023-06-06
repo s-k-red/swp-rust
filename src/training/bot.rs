@@ -90,6 +90,10 @@ impl Bot {
         let mut cards = me.cards_in_hand.clone();
         let legal_amount = std::cmp::min(5, cards.len());
         let mut played_cards: Vec<Card> = Vec::new();
+
+        if legal_amount < 1 {
+            return played_cards;
+        }
         
         let mut init_res = self.brain.guess(input_builder::get_inputs(self, gs, &played_cards, map, checkpoints));
         while played_cards.is_empty() {

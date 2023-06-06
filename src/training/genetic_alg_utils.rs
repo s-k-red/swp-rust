@@ -1,4 +1,4 @@
-use std::{io::{stdout, Write}, thread::{Thread, self}, fs};
+use std::{io::{stdout, Write}, thread::{Thread, self}, fs, fmt::Debug};
 
 use itertools::Itertools;
 use rand::Rng;
@@ -13,10 +13,10 @@ use crate::{
     setup, config::{CHECKPOINTS, PUPULATION_SIZE},
 };
 
-use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
+use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot, debug_bot::DebugBot};
 
 impl Trainer {
-    pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
+    pub fn random_gen(map: &[TileSerialize]) -> Vec<(DebugBot, GameStore)>{
         let mut pop = Vec::new();
         let m = map
             .iter()
@@ -24,7 +24,7 @@ impl Trainer {
             .collect_vec();
 
         for i in 0..PUPULATION_SIZE {
-                let bot = Bot::new_random();
+                let bot = DebugBot::new_random();
                 let mut gs = setup::convert(
                     m.clone(),
                 vec![bot.id.clone()],
@@ -70,19 +70,19 @@ impl Trainer {
     }
 
     pub fn next_gen(
-        last_gen: &mut Vec<(Bot, GameStore)>,
+        last_gen: &mut Vec<(DebugBot, GameStore)>,
         map: &[TileSerialize],
-    ) -> Vec<(Bot, GameStore)> {
+    ) -> Vec<(DebugBot, GameStore)> {
         let mut new_gen = Vec::new();
     
-        calc_fitness(last_gen);
+        calc_fitness_debug(last_gen);
         let m = map
             .iter()
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
     
         for i in 0..PUPULATION_SIZE {
-            let mut b = pick_bot(last_gen).clone(); //crossover in the future?
+            let mut b = pick_bot_debug(last_gen).clone(); //crossover in the future?
             b.round_index = 0;
             b.own_fitness = 0.0;
             b.normalized_fitness = 0.0;
@@ -128,6 +128,21 @@ fn pick_bot(last_gen: &[(Bot, GameStore)]) -> &Bot {
     &last_gen[index].0
 }
 
+fn pick_bot_debug(last_gen: &[(DebugBot, GameStore)]) -> &DebugBot {
+    let mut rnd = rand::thread_rng();
+    let mut index = 0;
+    let mut r = rnd.gen::<f32>();
+
+    while r > 0.0 {
+        r -= last_gen[index].0.normalized_fitness;
+        index += 1;
+    }
+
+    index -= 1;
+
+    &last_gen[index].0
+}
+
 fn calc_fitness(last_gen: &mut Vec<(Bot, GameStore)>) {
     let mut sum = 0.0;
 
@@ -139,3 +154,16 @@ fn calc_fitness(last_gen: &mut Vec<(Bot, GameStore)>) {
         bot.normalized_fitness = bot.own_fitness / sum;
     }
 }
+
+fn calc_fitness_debug(last_gen: &mut Vec<(DebugBot, GameStore)>) {
+    let mut sum = 0.0;
+
+    for (bot, gs) in last_gen.iter_mut() {
+        sum += bot.calc_own_fitness(gs);
+    }
+
+    for (ref mut bot, _) in last_gen {
+        bot.normalized_fitness = bot.own_fitness / sum;
+    }
+}
+
