@@ -45,7 +45,7 @@ impl Trainer {
                     while !won {
                         let mut played_cards = HashMap::new();
                         played_cards.insert(bot.id.clone(), bot.play_cards(&store, &map, &checkpoints)); // Use the cloned checkpoints vector
-                        println!("Run game {}", bot.id);
+                        //println!("Run game {}", bot.id);
                         let res = run_game(played_cards, &mut store, AUTOMATON);
                         won = res.is_some();
                         if won {
@@ -65,7 +65,7 @@ impl Trainer {
             }
         
             for (i, thread) in threads.into_iter().enumerate() {
-                println!("\rJoin Bot {} Nr {}/{}", ids[i], i, PUPULATION_SIZE);
+                print!("\rJoin Bot {} Nr {}/{}", ids[i], i, PUPULATION_SIZE);
                 stdout().flush().unwrap();
 
                 let (bot, store) = thread.join().expect("Failed to join thread");
