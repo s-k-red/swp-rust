@@ -1,16 +1,19 @@
 use std::{thread, collections::HashMap, time::{SystemTime, UNIX_EPOCH}};
-
+use std::{
+    io::{stdout, Write},
+    thread::sleep,
+    time::Duration,
+};
 use itertools::Itertools;
 
-use crate::{config::{GENERATIONS, ROUND_THRESHOLD}, training::genetic_alg_utils, start_game, automaton::AUTOMATON, run_game};
+use crate::{config::{GENERATIONS, ROUND_THRESHOLD, PUPULATION_SIZE}, training::genetic_alg_utils, start_game, automaton::AUTOMATON, run_game};
 
 use super::trainer::Trainer;
 
 
 impl Trainer {
     pub fn start_training_async(mut self) {
-        for gen in 0..GENERATIONS {
-            println!("generation: {}", gen);    
+        for gen in 0..GENERATIONS {  
             if gen > 0 {
                 let filtered_pop = &mut self.population.into_iter()
                 .filter(|p| p.0.won)
@@ -20,9 +23,11 @@ impl Trainer {
         
             let mut threads = Vec::new();
             let mut pop = Vec::new();
+            let mut ids = Vec::new();
 
             while let Some(element) = self.population.first().cloned() {
                 pop.push(element.clone());
+                ids.push(element.0.id);
                 self.population.drain(..1);
             }
 
@@ -40,6 +45,7 @@ impl Trainer {
                     while !won {
                         let mut played_cards = HashMap::new();
                         played_cards.insert(bot.id.clone(), bot.play_cards(&store, &map, &checkpoints)); // Use the cloned checkpoints vector
+                        //println!("Run game {}", bot.id);
                         let res = run_game(played_cards, &mut store, AUTOMATON);
                         won = res.is_some();
                         if won {
@@ -52,27 +58,22 @@ impl Trainer {
                         }
                     }
         
-                    //let first_robot = store.robots.first().unwrap();
-                    // println!(
-                    //     "Bot {} won {} in {} rounds with {} deaths and {} checkpoints reached",
-                    //     bot.id,
-                    //     bot.won,
-                    //     bot.round_index,
-                    //     first_robot.deaths,
-                    //     first_robot.greatest_checkpoint_reached + 1
-                    // );
                     (bot, store)
                 });
         
                 threads.push(thread);
             }
         
-            for thread in threads {
+            for (i, thread) in threads.into_iter().enumerate() {
+                print!("\rJoin Bot {} Nr {}/{}", ids[i], i, PUPULATION_SIZE);
+                stdout().flush().unwrap();
+
                 let (bot, store) = thread.join().expect("Failed to join thread");
+                //print!("| done with {} rounds", bot.round_index);
                 self.population.push((bot, store));
             }
 
-            println!("Generation {} done with win/loose {}/{} and avg deaths {} and avg rounds {}", 
+            println!("\rGeneration {} done with win/loose {}/{} and avg deaths {} and avg rounds {}", 
                 gen, 
                 self.population.iter().filter(|p| p.0.won).count(),
                 self.population.iter().filter(|p| !p.0.won).count(),
