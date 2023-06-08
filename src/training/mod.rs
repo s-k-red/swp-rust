@@ -9,6 +9,7 @@ mod input_builder;
 mod async_trainer;
 mod sync_trainer;
 mod serializable_bot;
+mod checkpoint_generator;
 
 fn random_checkpoints() -> Vec<Position>{
     let mut rnd = rand::thread_rng();

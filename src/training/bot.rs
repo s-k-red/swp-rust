@@ -61,18 +61,18 @@ impl Bot {
         self.last_deaths = robot.deaths;
 
         if self.won {
-            fitness += 1.0;
+            fitness += 2.0;
             //TODO maybe change? 2 rounds per checkpoint too much?
             fitness += (2.0 * (game_store.highest_checkpoint+1) as f32)/(self.round_index as f32);
         } else { // is else a good idea or should they get a reward every time?
             fitness += robot.greatest_checkpoint_reached as f32 / CHECKPOINTS.len() as f32; //TODO!!!!! change to max num of checkpoints
         }
 
-        fitness -= (robot.deaths as f32 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
+        //fitness -= (robot.deaths as f32 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
 
         //fitness -= robot.hp as f32 / MAX_HP as f32;
 
-        self.own_fitness = fitness.max(0.0);
+        //self.own_fitness = fitness.max(0.0);
 
         self.own_fitness
     }
