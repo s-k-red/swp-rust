@@ -16,22 +16,24 @@ use crate::{
 use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
 
 impl Trainer {
-    pub fn random_gen(map: &[TileSerialize]) -> Vec<(Bot, GameStore)>{
+    pub fn random_gen(map: &[TileSerialize], checkpoints: &[Position]) -> Vec<(Bot, GameStore)>{
         let mut pop = Vec::new();
         let m = map
             .iter()
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
 
+        println!("Checkpoints: {:?}", checkpoints);
+
         for i in 0..PUPULATION_SIZE {
-                let cp = random_checkpoints();
+                let cp = checkpoints.to_vec().clone();
                 let bot = Bot::new_random();
                 let mut gs = setup::convert(
                     m.clone(),
                 vec![bot.id.clone()],
                 create_card_deck(),
                 cp[0],
-                1,
+                cp.len()-1,
                 );
                 gs.board
                     .add_checkpoints(cp);
@@ -46,7 +48,7 @@ impl Trainer {
     }
 
     pub fn gen_from_file(filepath: String) -> Vec<Bot> {
-        // let serializable_bots = 
+        // let serializable_bots =
         //     serde_json::from_str(fs::read_to_string(filepath).unwrap().as_str());
 
         todo!()
@@ -54,7 +56,7 @@ impl Trainer {
 
     //version_data unix timestamp
     pub fn gen_to_file(gen: &[Bot], iteration: usize, version_date: u64){
-        // let serializable_bots = gen.iter().map(|g| 
+        // let serializable_bots = gen.iter().map(|g|
         //     SerializableBot::from(g.clone())).collect_vec();
 
         let best_performing_bot = gen.iter().max_by(|a, b| a.normalized_fitness.total_cmp(&b.normalized_fitness)).unwrap();
@@ -63,25 +65,28 @@ impl Trainer {
 
         fs::create_dir(format!("gens/gen_{}_{}_{}", gen_id, iteration, version_date)).unwrap();
 
-        // fs::write(format!("gens/gen_{}_{}_{}/gen_{}.json", gen_id, iteration, version_date, gen_id), 
+        // fs::write(format!("gens/gen_{}_{}_{}/gen_{}.json", gen_id, iteration, version_date, gen_id),
         //     serde_json::to_string(&serializable_bots).unwrap())
         //     .expect("failed to save gen");
-    
+
         fs::write(format!("gens/gen_{}_{}_{}/best_bot.json", gen_id, iteration, version_date), serde_json::to_string(&SerializableBot::from(best_performing_bot.clone())).unwrap()).expect("failed to save best bot");
     }
 
     pub fn next_gen(
         last_gen: &mut Vec<(Bot, GameStore)>,
         map: &[TileSerialize],
+        checkpoints: &[Position]
     ) -> Vec<(Bot, GameStore)> {
         let mut new_gen = Vec::new();
-    
+
         calc_fitness(last_gen);
         let m = map
             .iter()
             .map(|t| -> TileEntity { TileEntity::from(t.clone()) })
             .collect_vec();
-    
+
+        println!("Checkpoints: {:?}", checkpoints);
+
         for i in 0..PUPULATION_SIZE {
             let mut b = pick_bot(last_gen).clone(); //crossover in the future?
             b.round_index = 0;
@@ -92,13 +97,13 @@ impl Trainer {
             b.last_deaths = 0;
             let id = b.id.clone();
             b.mutate();
-            let cp = random_checkpoints();
+            let cp = checkpoints.to_vec().clone();
             let mut gs = setup::convert(
                 m.clone(),
                 vec![id],
                 create_card_deck(),
                 cp[0],
-                1,
+                cp.len()-1,
             );
             gs.board.add_checkpoints(cp);
             print!("\r{}/{}", i+1, PUPULATION_SIZE);
@@ -108,9 +113,9 @@ impl Trainer {
                 gs,
             ));
         }
-    
+
         println!("");
-    
+
         new_gen
     }
 }
