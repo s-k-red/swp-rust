@@ -16,7 +16,8 @@ impl Trainer {
     pub fn start_training_async(mut self) {
         for gen in 0..GENERATIONS {
             if gen > 0 {
-                let filtered_pop = &mut self.population;// let filtered_pop = &mut self.population.into_iter()
+                let filtered_pop = &mut self.population;
+                // let filtered_pop = &mut self.population.into_iter()
                 // .filter(|p| p.0.won)
                 // .collect_vec();
                 self.checkpoints = random_checkpoints();
@@ -75,13 +76,13 @@ impl Trainer {
                 self.population.push((bot, store));
             }
 
-            println!("\rGeneration {} done with Total rounds {} win/loose {}/{} and avg deaths {} and avg rounds {}",
+            println!("\rGeneration {} done: Total rounds {}, w/l {}/{}, avg deaths {:.3}, avg rounds {:.3}",
                 gen,
                 self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>(),
                 self.population.iter().filter(|p| p.0.won).count(),
                 self.population.iter().filter(|p| !p.0.won).count(),
-                self.population.iter().map(|p| p.1.robots[0].deaths as usize).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
-                self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>() / self.population.len(),
+                 (self.population.iter().map(|p| p.1.robots[0].deaths as usize).collect::<Vec<usize>>().iter().sum::<usize>() as f32) / (self.population.len() as f32),
+                 (self.population.iter().map(|p| p.0.round_index).collect::<Vec<usize>>().iter().sum::<usize>() as f32) / (self.population.len() as f32),
             );
         }
 

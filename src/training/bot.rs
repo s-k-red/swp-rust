@@ -7,6 +7,7 @@ use crate::{
     neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
+use num::pow::Pow;
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -61,12 +62,15 @@ impl Bot {
         self.last_deaths = robot.deaths;
 
         if self.won {
-            fitness += game_store.highest_checkpoint as f32; //not +1 because it starts at 0 which is perfectly fine
+            //round 0 checkpoint 0 = 1, round 10 checkpoints 2 = 5 etc
+            let x = ((self.round_index+1) as f32) / ((robot.greatest_checkpoint_reached+1) as f32);
+            //0 min value https://www.wolframalpha.com/input?i=plot+-2x+%2B+10
+            fitness += (-(2.0 * x) + 10.0).max(0.0);
             //TODO maybe change? 2 rounds per checkpoint too much?
-            fitness += (2.0 * (robot.greatest_checkpoint_reached +1) as f32)/(self.round_index as f32);
-        } else { // is else a good idea or should they get a reward every time?
-            fitness += robot.greatest_checkpoint_reached as f32;// / CHECKPOINTS.len() as f32; //TODO!!!!! change to max num of checkpoints
+            //fitness += (2.0 * (robot.greatest_checkpoint_reached +1) as f32)/(self.round_index as f32);
         }
+
+        fitness += (robot.greatest_checkpoint_reached as f32).pow(2);
 
         //fitness -= (robot.deaths as f32 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
 

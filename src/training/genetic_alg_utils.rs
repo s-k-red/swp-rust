@@ -10,7 +10,9 @@ use crate::{
     components::{GameStore},
     datatypes::Position,
     serialization::TileSerialize,
-    setup, config::{CHECKPOINTS, PUPULATION_SIZE}, training::random_checkpoints,
+    setup, config::CHECKPOINTS,
+    config::PUPULATION_SIZE,
+    training::random_checkpoints,
 };
 
 use super::{bot::Bot, trainer::Trainer, serializable_bot::SerializableBot};
@@ -42,7 +44,7 @@ impl Trainer {
                 pop.push((bot, gs));
         }
 
-        println!("");
+        println!();
 
         pop
     }

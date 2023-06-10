@@ -55,12 +55,6 @@ pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>,
     input.push((next_checkpoint.y - my_robot.position.y) as f32);
     input.extend_from_slice(collect_tiles_as_relative_pos(my_robot, map).as_slice());
 
-    // for _other_robot in 0..4 {
-    //     input.push(-1.0); //x
-    //     input.push(-1.0); //y
-    //     input.push(-1.0); //direction
-    // }
-
     input
 }
 
