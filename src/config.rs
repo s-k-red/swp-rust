@@ -11,7 +11,7 @@ pub const INPUT_NODES: usize = 7*9 + 7*5 + 4 + 1 + 1 * 2 + 4 * 7 * 7 * (4 + 34);
 pub const OUTPUT_NODES: usize = 9;
 pub const HIDDEN_LAYERS: usize = 10;
 pub const MUTATION_RATE: f32 = 0.005; //0.1%
-pub const GENERATIONS: usize = 10;
+pub const GENERATIONS: usize = 10000;
 pub const POPULATION_SIZE: i32 = 10;
 pub const CHECKPOINTS: &[&[Position]] = &[
     &[Position { x: 7, y: 4 }, Position { x: 7, y: 10 }],

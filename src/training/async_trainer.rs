@@ -22,7 +22,7 @@ impl Trainer {
         //
         // }
 
-        while avg_death > 1.0 {
+        while gen <= GENERATIONS {
             if gen > 0 {
                 if gen % SAVE_GEN_INTERVAL == 0 {
                     let best = self.population.iter()
