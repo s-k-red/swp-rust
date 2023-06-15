@@ -10,6 +10,8 @@ mod async_trainer;
 mod sync_trainer;
 mod serializable_bot;
 mod checkpoint_generator;
+mod parent_selection;
+mod crossover;
 
 fn random_checkpoints() -> Vec<Position>{
     let mut rnd = rand::thread_rng();

@@ -7,7 +7,7 @@ use crate::{
     neural_net::NeuralNet, datatypes::Position, serialization::{TileEntitySerialize, TileSerialize},
 };
 use itertools::Itertools;
-use num::pow::Pow;
+use num::{pow::Pow, integer::Roots};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -51,9 +51,9 @@ impl Bot {
         }
     }
 
-    pub fn calc_own_fitness(&mut self, game_store: &GameStore) -> f32 {
+    pub fn calc_own_fitness(&mut self, game_store: &GameStore, checkpoints: &Vec<Position>) -> f32 {
         //maybe this has to be done after each round in the future
-        let mut fitness = 0.0;
+        let mut fitness: f32 = 0.0;
         let robot = game_store
             .robots
             .iter()
@@ -61,22 +61,35 @@ impl Bot {
             .unwrap();
         self.last_deaths = robot.deaths;
 
-        if self.won {
-            //round 0 checkpoint 0 = 1, round 10 checkpoints 2 = 5 etc
-            let x = ((self.round_index+1) as f32) / ((robot.greatest_checkpoint_reached+1) as f32);
-            //0 min value https://www.wolframalpha.com/input?i=plot+-2x+%2B+10
-            fitness += (-(2.0 * x) + 10.0).max(0.0);
-            //TODO maybe change? 2 rounds per checkpoint too much?
-            //fitness += (2.0 * (robot.greatest_checkpoint_reached +1) as f32)/(self.round_index as f32);
+        // if self.won {
+        //     //round 0 checkpoint 0 = 1, round 10 checkpoints 2 = 5 etc
+        //     //let x = ((robot.greatest_checkpoint_reached+1) as f32) / ((self.round_index+1) as f32);
+        //     let x = ((self.round_index+1) as f32) / ((robot.greatest_checkpoint_reached) as f32);
+        //     //0 min value https://www.wolframalpha.com/input?i=plot+-2x+%2B+10
+        //     fitness += (-(2.0 * x) + 10.0).max(0.0);
+        // }
+        //
+        fitness += ((robot.greatest_checkpoint_reached+1) as f32).pow(2);
+
+        if !self.won && robot.greatest_checkpoint_reached+1 < checkpoints.len() {
+            let next_c_val = ((robot.greatest_checkpoint_reached+1) as f32).pow(2);
+            let robot_to_next_c = robot.position.distance_vec(*checkpoints.get(robot.greatest_checkpoint_reached+1).unwrap());
+            let c_to_next_c = checkpoints.get(robot.greatest_checkpoint_reached).unwrap().distance_vec(*checkpoints.get(robot.greatest_checkpoint_reached+1).unwrap());
+            let d_ro_to_ne_c = (robot_to_next_c.x.pow(2) as f32 + robot_to_next_c.y.pow(2) as f32).sqrt();
+            let d_c_to_next_c = (c_to_next_c.x.pow(2) as f32 + c_to_next_c.y.pow(2) as f32).sqrt();
+            let distance = 1.0 - (d_ro_to_ne_c / d_c_to_next_c);
+            fitness += distance * next_c_val;
         }
 
-        fitness += (robot.greatest_checkpoint_reached as f32).pow(2);
+        if self.won {
+            fitness += 3.0 - robot.deaths as f32;
+        }
 
-        //fitness -= (robot.deaths as f32 / 2.0).exp(); //2 deaths is bad but oookay but from there on its really bad
+        // if robot.alive {
+        //     fitness += (robot.hp / 5) as f32;
+        // }
 
-        //fitness -= robot.hp as f32 / MAX_HP as f32;
-
-        self.own_fitness = fitness;
+        self.own_fitness = fitness.max(0.0);
 
         self.own_fitness
     }

@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate derive_builder;
 
-use std::{collections::HashMap, io, io::prelude::*};
+use std::{collections::HashMap, io, io::prelude::*, thread};
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};

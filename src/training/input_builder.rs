@@ -18,35 +18,33 @@ pub fn get_inputs(bot: &Bot, gs: &GameStore, already_played_cards: &Vec<Card>,
 
     for i in 0..9 {
         if cards.len() > i {
-            for bit in 1..11 {
-                if cards[i].id as i32 & 2.pow(bit as u32) > 0 {
-                    input.push(1.0);
-                } else {
-                    input.push(0.0);
-                }
-            }
+            input.extend_from_slice(calc_card_input(&cards[i]).as_slice());
         } else {
-            for _bit in 0..10 {
-                input.push(-1.0);
+            for _bit in 0..7 {
+                input.push(0.0);
             }
         }
     }
 
     for i in 0..5 {
         if already_played_cards.len() > i {
-            for bit in 1..11 {
-                input.push((already_played_cards[i].id as i32 & 2.pow(bit as u32)) as f32);
-            }
+            input.extend_from_slice(calc_card_input(&already_played_cards[i]).as_slice());
         } else {
-            for _bit in 0..10 {
-                input.push(-1.0);
+            for _bit in 0..7 {
+                input.push(0.0);
             }
         }
     }
 
-    input.push(my_robot.facing_direction.ordinal() as f32);
+    for oh in 0..4 {
+        if oh == my_robot.facing_direction.ordinal() {
+            input.push(1.0);
+            continue;
+        }
+        input.push(0.0);
+    }
     input.push(my_robot.hp as f32);
-    input.push(my_robot.safety_copy_amount as f32);
+    //input.push(my_robot.safety_copy_amount as f32);
 
     let next_checkpoint =
         checkpoints[my_robot.greatest_checkpoint_reached + 1];
@@ -66,8 +64,12 @@ fn collect_tiles_as_relative_pos(robot: &Robot, map: &[TileSerialize]) -> Vec<f3
         // !!!!!!!!!!!!!!!!!!!! fill out of bounds positions with -1s
         if !(0..=11).contains(&pos.x) || !(0..=11).contains(&pos.y) {
             for _t in 0..4 {
-                tiles.push(-1.0);
-                tiles.push(-1.0);
+                for _oh in 0..4 {
+                    tiles.push(0.0);
+                }
+                for _oh in 0..=33 {
+                    tiles.push(0.0);
+                }
             }
             continue;
         }
@@ -79,11 +81,27 @@ fn collect_tiles_as_relative_pos(robot: &Robot, map: &[TileSerialize]) -> Vec<f3
 
         for t in 0..4 {
             if entities.len() > t {
-                tiles.push(entities[t].direction.ordinal() as f32);
-                tiles.push(entities[t].type_id as f32);
+                for oh in 0..4 {
+                    if oh == entities[t].direction.ordinal() {
+                        tiles.push(1.0);
+                        continue;
+                    }
+                    tiles.push(0.0);
+                }
+                for oh in 0..=33 {
+                    if entities[t].type_id == oh {
+                        tiles.push(1.0);
+                        continue;
+                    }
+                    tiles.push(0.0);
+                }
             } else {
-                tiles.push(-1.0);
-                tiles.push(-1.0);
+                for _oh in 0..4 {
+                    tiles.push(0.0);
+                }
+                for _oh in 0..=33 {
+                    tiles.push(0.0);
+                }
             }
         }
     }
@@ -102,4 +120,59 @@ fn calc_tile_positions(pos: &Position) -> Vec<Position> {
     }
 
     positions
+}
+
+fn calc_card_input(card: &Card) -> Vec<f32>{
+    let mut res = Vec::new();
+
+    //TURN LEFT
+    if (70..411).step_by(20).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //TURN RIGHT
+    if (80..421).step_by(20).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //U TURN
+    if (10..61).step_by(10).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //BACK UP
+    if (430..481).step_by(10).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //MOVE 1
+    if (490..661).step_by(10).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //MOVE 2
+    if (670..781).step_by(10).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    //MOVE 3
+    if (790..841).step_by(10).contains(&(card.id as i32)){
+        res.push(1.0);
+    } else {
+        res.push(0.0);
+    }
+
+    res
 }

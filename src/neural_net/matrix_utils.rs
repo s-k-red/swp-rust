@@ -44,9 +44,9 @@ pub fn mutate(mat: &Matrix<f32>, rate: f32) -> Matrix<f32> {
         for col in 0..mat.cols() {
             let current_val = *mat.data().get(mat.cols() * row + col).unwrap();
             if rng.gen::<f32>() < rate { //TODO: maybe change?
-                vals.push(rng.gen::<f32>() * 2.0 - 1.0); //TODO: maybe change? for now completely random
+                vals.push((current_val + (rng.gen::<f32>() * 2.0 - 1.0) / 10.0).min(1.0).max(-1.0)); //TODO: maybe change? for now completely random
             } else {
-                vals.push(current_val);   
+                vals.push(current_val);
             }
         }
     }
