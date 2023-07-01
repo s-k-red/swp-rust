@@ -26,3 +26,6 @@ features = [
 
 [profile.dev]
 debug = true
+
+[profile.release]
+debug = true

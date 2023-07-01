@@ -1,7 +1,9 @@
 #[macro_use]
 extern crate derive_builder;
 
-use std::{collections::HashMap, io, io::prelude::*};
+use std::{collections::HashMap, io, io::prelude::*, thread};
+use std::sync::mpsc::channel;
+use std::time::Duration;
 
 use automaton::{GameAutomaton, AUTOMATON_SIZE};
 use components::{Card, GameStore};
@@ -14,6 +16,7 @@ use crate::{
     components::Board,
     datatypes::{Direction, Position},
 };
+use crate::config::{GENERATIONS, HIDDEN_LAYERS, HIDDEN_NODES, INPUT_NODES, MUTATION_RATE, OUTPUT_NODES, PERCENTAGE_RAND_NEURONS_CROSSOVER, POPULATION_SIZE, ROUND_THRESHOLD, SAVE_GEN_INTERVAL};
 
 mod automaton;
 mod card_factory;
@@ -31,6 +34,8 @@ mod serialization_utils;
 pub mod setup;
 mod training;
 fn main() {
+    println!("Starting training with config: \n INPUT_NODES: {} \n OUTPUT_NODES: {} \n HIDDEN_NODES: {} \n HIDDEN_LAYER: {} \n MUTATION_RATE: {} \n CROSSOVER_NEURON_RATE: {}% \n GENERATIONS: {} \n POPULATION_SIZE: {} \n SAVE_GEN_INTERVAL: {} \n ROUND_CANCEL_THRESHOLD: {}",
+             INPUT_NODES, OUTPUT_NODES, HIDDEN_NODES, HIDDEN_LAYERS, MUTATION_RATE, PERCENTAGE_RAND_NEURONS_CROSSOVER*100.0, GENERATIONS, POPULATION_SIZE, SAVE_GEN_INTERVAL, ROUND_THRESHOLD);
     let trainer = Trainer::new();
     trainer.start_training_async();
 }

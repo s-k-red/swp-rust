@@ -21,11 +21,12 @@ pub struct Trainer {
 impl Trainer {
     pub fn new() -> Trainer {
         let map = load();
+        let cp = random_checkpoints();
 
         Trainer {
-            population: Trainer::random_gen(&map),
+            population: Trainer::random_gen(&map, &cp),
             map,
-            checkpoints: random_checkpoints(),
+            checkpoints: cp,
         }
     }
 }

@@ -69,6 +69,9 @@ impl Position {
     pub fn distance(&self, pos: Position) -> u32 {
         self.x.abs_diff(pos.x) + self.y.abs_diff(pos.y)
     }
+    pub fn distance_vec(&self, pos: Position) -> Position {
+        Position { x: self.x.abs_diff(pos.x) as i32, y: self.y.abs_diff(pos.y) as i32 }
+    }
 }
 
 impl Add for Position {
